@@ -21,7 +21,7 @@ button:hover{border-color:var(--ac)}button:focus-visible,input:focus-visible,sel
 button.main{background:var(--ac);color:var(--acx);border-color:var(--ac);font-weight:600;width:100%;padding:11px}
 input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px solid var(--bd);border-radius:8px;background:var(--card);margin-bottom:6px}
 .row{display:flex;gap:6px;flex-wrap:wrap}.row>button{flex:1 1 auto}
-.row>.sw{flex:0 0 26px}.sw{width:26px;height:26px;border-radius:50%;padding:0;border:2px solid var(--bd)}.sw.on{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
+.sr{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}.filebtn{display:block;text-align:center;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;cursor:pointer;background:var(--card)}.filebtn:hover{border-color:var(--ac)}#file:focus-visible+.filebtn{outline:2px solid var(--ac);outline-offset:2px}.row>.sw{flex:0 0 26px}.sw{width:26px;height:26px;border-radius:50%;padding:0;border:2px solid var(--bd)}.sw.on{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
 .tabs{display:flex;gap:6px;margin-bottom:8px}.tabs button.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
 .wrap{overflow:hidden}#stage{position:relative;width:480px;height:520px;margin:0 auto;transform-origin:0 0}
 #shirt{position:absolute;inset:0}#cv-box{position:absolute;inset:0}
@@ -32,14 +32,14 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko (prototyp) · verze 3</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko (prototyp) · verze 4</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
   <div class="row"><select id="font" aria-label="Písmo" style="flex:2"><option>Arial</option><option>Georgia</option><option>Impact</option><option>Courier New</option><option>Trebuchet MS</option></select><input type="color" id="tcol" value="#000000" aria-label="Barva textu" style="flex:1;height:36px"></div>
   <button id="addTxt" style="width:100%">Přidat text</button>
   <h2>Obrázek</h2>
-  <input type="file" id="file" accept="image/png,image/jpeg,image/svg+xml" aria-label="Nahrát obrázek">
+  <input type="file" id="file" class="sr" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"><label for="file" class="filebtn">Nahrát obrázek</label>
   <h2>Emotikony</h2><div class="row" id="emo"></div>
   <div id="msg" role="status"></div>
  </section>
@@ -96,7 +96,7 @@ SIZES.forEach(s=>{const l=document.createElement("label");l.innerHTML=`${s}<inpu
 $("addTxt").onclick=()=>add(new fabric.IText($("txt").value||"Váš text",{fontFamily:$("font").value,fill:$("tcol").value,fontSize:36}));
 $("tcol").oninput=()=>{const o=cv.getActiveObject();if(o&&o.type==="i-text"){o.set("fill",$("tcol").value);cv.requestRenderAll()}};
 $("font").onchange=()=>{const o=cv.getActiveObject();if(o&&o.type==="i-text"){o.set("fontFamily",$("font").value);cv.requestRenderAll()}};
-$("file").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>fabric.Image.fromURL(r.result,img=>{
+$("file").onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>25*1024*1024){say("Soubor je větší než 25 MB. Zvolte menší soubor.");e.target.value="";return}const r=new FileReader();r.onload=()=>fabric.Image.fromURL(r.result,img=>{
  if(img.width<1000)say("Obrázek má jen "+img.width+" px na šířku. Pro kvalitní tisk doporučujeme alespoň 1000 px.");else say("Obrázek nahrán ("+img.width+" px).");
  img.scale(Math.min(160/img.width,160/img.height));add(img)});r.readAsDataURL(f);e.target.value=""};
 $("del").onclick=()=>{cv.getActiveObjects().forEach(o=>cv.remove(o));cv.discardActiveObject();cv.requestRenderAll();price()};
