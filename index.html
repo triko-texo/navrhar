@@ -2,6 +2,8 @@
 <html lang="cs"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Návrhář potisku – prototyp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Montserrat:wght@400;700&family=Oswald:wght@400;700&family=Anton&family=Archivo+Black&family=Playfair+Display:wght@400;700&family=Lobster&family=Pacifico&family=Dancing+Script:wght@400;700&family=Caveat:wght@400;700&family=Amatic+SC:wght@400;700&family=Bangers&family=Fredoka:wght@400;700&family=Righteous&family=Russo+One&family=Lilita+One&family=Courgette&family=Press+Start+2P&display=swap">
 <style>
 :root{--bg:#eef0f2;--card:#fff;--tx:#16181d;--mu:#5d6370;--ac:#0a7d6e;--acx:#fff;--bd:#d5d9df;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161a;--card:#1f2228;--tx:#eef0f3;--mu:#9aa1ad;--ac:#2fc3ad;--acx:#06201b;--bd:#363b44}}
@@ -29,10 +31,15 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 .sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.sizes label{font-size:12px;color:var(--mu);text-align:center}
 .sizes input{width:100%;box-sizing:border-box;padding:5px;text-align:center;border:1px solid var(--bd);border-radius:6px;background:var(--card)}
 .price{font-size:28px;font-weight:700}.mu{color:var(--mu);font-size:13px}#msg{min-height:20px;font-size:13px;margin-top:8px;color:var(--ac)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:10px}#modal[hidden]{display:none}
+.mbox{background:var(--card);border:1px solid var(--bd);border-radius:12px;width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:14px}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chips button{padding:3px 10px;border-radius:99px;font-size:13px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;margin:10px 0}#grid button{padding:6px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#fff}#grid img{max-width:100%;max-height:100%}
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko (prototyp) · verze 6</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko (prototyp) · verze 7</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -40,7 +47,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
   <button id="addTxt" style="width:100%">Přidat text</button>
   <h2>Obrázek</h2>
   <input type="file" id="file" class="sr" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"><label for="file" class="filebtn">Nahrát obrázek</label>
-  <h2>Emotikony</h2><div class="row" id="emo"></div>
+  <h2>Motivy</h2><button id="openM" style="width:100%">Vyhledat motiv</button>
   <div id="msg" role="status"></div>
  </section>
  <section class="card">
@@ -59,6 +66,14 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
   <div class="bact"><button class="main" id="cart">Přidat do košíku</button></div>
  </div>
 </div>
+<div id="modal" hidden><div class="mbox" role="dialog" aria-label="Motivy">
+ <div class="mhead"><b>Motivy</b><button id="mx" aria-label="Zavřít">Zavřít</button></div>
+ <div class="tabs"><button id="tEmo" class="on">Emotikony</button><button id="tSym">Symboly (jedna barva)</button></div>
+ <div class="row"><input type="text" id="q" placeholder="Hledejte anglicky, např. heart, beer, dog" style="flex:1 1 200px;margin:0"><button id="qgo" style="flex:0 0 auto">Hledat</button></div>
+ <div class="chips" id="chips"></div>
+ <div id="symcol" class="mu" hidden>Barva symbolu: <input type="color" id="scol" value="#000000" aria-label="Barva symbolu"></div>
+ <div id="grid"></div><div class="row"><button id="more" hidden>Zobrazit další</button></div><div class="mu" id="mmsg" role="status"></div>
+</div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <script>
 // ===== NASTAVENÍ (upravte podle sebe) =====
@@ -91,11 +106,11 @@ function place(k){const z=ZONES[k],o=cv.getActiveObject();if(!o){say("Nejdřív 
 // Ovládací prvky
 COLORS.forEach(c=>{const b=document.createElement("button");b.className="sw"+(c===color?" on":"");b.style.background=c;b.setAttribute("aria-label","Barva "+c);
  b.onclick=()=>{color=c;document.querySelectorAll(".sw").forEach(x=>x.classList.remove("on"));b.classList.add("on");drawShirt()};$("cols").appendChild(b)});
-EMO.forEach(e=>{const b=document.createElement("button");b.textContent=e;b.onclick=()=>add(new fabric.Text(e,{fontSize:60}));$("emo").appendChild(b)});
+
 SIZES.forEach(s=>{const l=document.createElement("label");l.innerHTML=`${s}<input type="number" min="0" value="${s==="M"?1:0}" aria-label="Počet ${s}">`;l.querySelector("input").oninput=price;$("sizes").appendChild(l)});
-$("addTxt").onclick=()=>add(new fabric.IText($("txt").value||"Váš text",{fontFamily:$("font").value,fill:$("tcol").value,fontSize:36}));
+$("addTxt").onclick=()=>{const f=$("font").value;useFont(f,()=>add(new fabric.IText($("txt").value||"Váš text",{fontFamily:f,fill:$("tcol").value,fontSize:36})))};
 $("tcol").oninput=()=>{const o=cv.getActiveObject();if(o&&o.type==="i-text"){o.set("fill",$("tcol").value);cv.requestRenderAll()}};
-$("font").onchange=()=>{const o=cv.getActiveObject();if(o&&o.type==="i-text"){o.set("fontFamily",$("font").value);cv.requestRenderAll()}};
+$("font").onchange=()=>{const o=cv.getActiveObject(),f=$("font").value;if(o&&o.type==="i-text")useFont(f,()=>{o.set("fontFamily",f);o.initDimensions();o.setCoords();cv.requestRenderAll()})};
 $("file").onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>25*1024*1024){say("Soubor je větší než 25 MB. Zvolte menší soubor.");e.target.value="";return}const r=new FileReader();r.onload=()=>fabric.Image.fromURL(r.result,img=>{
  if(img.width<1000)say("Obrázek má jen "+img.width+" px na šířku. Pro kvalitní tisk doporučujeme alespoň 1000 px.");else say("Obrázek nahrán ("+img.width+" px).");
  img.scale(Math.min(160/img.width,160/img.height));add(img)});r.readAsDataURL(f);e.target.value=""};
@@ -104,6 +119,27 @@ document.addEventListener("keydown",e=>{if(e.key==="Delete"&&document.activeElem
 $("tf").onclick=()=>switchSide("front");$("tb").onclick=()=>switchSide("back");
 $("dl").onclick=()=>{cv.discardActiveObject();cv.renderAll();const a=document.createElement("a");a.href=cv.toDataURL({format:"png",multiplier:3});a.download="potisk-"+(side==="front"?"predek":"zada")+".png";a.click();say("Staženo. Zadní a přední stranu stáhněte zvlášť.")};
 $("cart").onclick=()=>say("Ukázka: tady se později odešle objednávka do košíku Shoptetu ("+qty()+" ks, "+$("total").textContent+").");
+// ===== Písma (Google Fonts, podpora češtiny ověřte vzorkem textu) =====
+const FONTS=["Arial","Georgia","Impact","Courier New","Roboto","Open Sans","Montserrat","Oswald","Anton","Archivo Black","Playfair Display","Lobster","Pacifico","Dancing Script","Caveat","Amatic SC","Bangers","Fredoka","Righteous","Russo One","Lilita One","Courgette","Press Start 2P"];
+$("font").innerHTML="";FONTS.forEach(f=>{const o=document.createElement("option");o.textContent=f;o.style.fontFamily=f;$("font").appendChild(o)});
+function useFont(f,cb){(document.fonts&&document.fonts.load?document.fonts.load('36px "'+f+'"'):Promise.resolve()).then(cb,cb)}
+// ===== Motivy (Iconify API: emotikony Noto a Fluent, symboly MDI a Tabler) =====
+const API="https://api.iconify.design",SETS={emo:"noto,fluent-emoji-flat",sym:"mdi,tabler"};
+const CHIPS=[["Smajlíci","face"],["Srdce","heart"],["Hvězdy","star"],["Zvířata","animal"],["Pes","dog"],["Kočka","cat"],["Jídlo","food"],["Pivo","beer"],["Sport","sport"],["Hudba","music"],["Oslava","party"],["Auto","car"],["Příroda","tree"],["Děti","baby"],["Láska","love"],["Koruna","crown"]];
+let mode="emo",res=[],shown=0;
+function iurl(id){const a=id.split(":"),c=mode==="sym"?"&color="+encodeURIComponent($("scol").value):"";return API+"/"+a[0]+"/"+a[1]+".svg?height=512"+c}
+function render(){const part=res.slice(shown,shown+48);part.forEach(id=>{const b=document.createElement("button"),im=new Image();im.src=iurl(id);im.alt=id.split(":")[1];im.loading="lazy";b.appendChild(im);b.onclick=()=>addIcon(id);$("grid").appendChild(b)});shown+=part.length;$("more").hidden=shown>=res.length}
+function search(q){$("mmsg").textContent="Hledám…";$("grid").innerHTML="";res=[];shown=0;$("more").hidden=true;
+ fetch(API+"/search?query="+encodeURIComponent(q)+"&limit=96&prefixes="+SETS[mode]).then(r=>r.json()).then(d=>{res=d.icons||[];$("mmsg").textContent=res.length?"":"Nic nenalezeno. Zkuste anglické slovo.";render()}).catch(()=>{$("mmsg").textContent="Hledání se nepodařilo. Zkontrolujte připojení a zkuste to znovu."})}
+function addIcon(id){fabric.Image.fromURL(iurl(id),img=>{if(!img||!img.width){say("Motiv se nepodařilo načíst.");return}img.scaleToWidth(110);add(img);$("modal").hidden=true;say("Motiv přidán.")},{crossOrigin:"anonymous"})}
+function setMode(m){mode=m;$("tEmo").classList.toggle("on",m==="emo");$("tSym").classList.toggle("on",m==="sym");$("symcol").hidden=m!=="sym";search($("q").value||(m==="emo"?"smile":"star"))}
+CHIPS.forEach(c=>{const b=document.createElement("button");b.textContent=c[0];b.onclick=()=>{$("q").value=c[1];search(c[1])};$("chips").appendChild(b)});
+$("openM").onclick=()=>{$("modal").hidden=false;if(!res.length)search(mode==="emo"?"smile":"star");$("q").focus()};
+$("mx").onclick=()=>{$("modal").hidden=true};$("modal").onclick=e=>{if(e.target.id==="modal")$("modal").hidden=true};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("modal").hidden=true});
+$("qgo").onclick=()=>search($("q").value||"smile");$("q").onkeydown=e=>{if(e.key==="Enter")$("qgo").click()};
+$("more").onclick=render;$("tEmo").onclick=()=>setMode("emo");$("tSym").onclick=()=>setMode("sym");
+$("scol").oninput=()=>{$("grid").innerHTML="";shown=0;render()};
 cv.on("object:modified",price);drawShirt();price();
 // Zmenší náhled trička, aby se vešel do úzkého okna (telefon, úzký sloupec e-shopu)
 function fit(){const w=$("sw").clientWidth,wide=matchMedia("(min-width:640px)").matches;let k=Math.min(1,w/480);if(wide)k=Math.min(k,Math.max(.6,(innerHeight-370)/520));$("stage").style.transformOrigin=w<480?"0 0":"50% 0";$("stage").style.transform=k<1?"scale("+k+")":"none";$("sw").style.height=(520*k)+"px";cv.calcOffset()}
