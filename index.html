@@ -39,7 +39,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 14</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 17</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -89,13 +89,13 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
    <label class="mu" for="fa" id="fal">Adresa pro doručení</label><textarea id="fa" rows="3" autocomplete="street-address" placeholder="Ulice a číslo, PSČ, město"></textarea>
    <label class="mu" for="fz">Poznámka (nepovinné)</label><textarea id="fz" rows="2"></textarea>
    <label class="mu chk"><input type="checkbox" id="fc"><span>Souhlasím se zpracováním osobních údajů pro vyřízení objednávky a s <a href="https://www.texo.cz/obchodni-podminky/" target="_blank" rel="noopener">obchodními podmínkami</a>. Zásady: <a href="https://www.texo.cz/podminky-ochrany-osobnich-udaju/" target="_blank" rel="noopener">ochrana osobních údajů</a>.</span></label>
-   <p class="mu">Po odeslání se vám ozveme e-mailem s potvrzením a platebními údaji. Objednávka je závazná až po našem potvrzení.</p>
+   <p class="mu" id="onotice"></p>
    <div id="oerr" role="alert"></div>
    <button type="submit" class="main" id="osend">Odeslat objednávku</button>
   </form>
  </div>
- <div id="odone" hidden><h2 style="font-size:18px;margin:6px 0">Děkujeme, objednávku jsme odeslali</h2><p>Číslo: <b id="oref"></b></p><div id="pay" hidden><p><b>Zaplaťte hned QR kódem</b> v bankovní aplikaci:</p><div id="qr" style="max-width:220px"></div><p class="mu" id="paytxt"></p><p class="mu">Objednávku potvrdíme po přijetí platby a kontrole návrhu.</p></div>
- <p>Potvrzení vám napíšeme e-mailem. Pokud se vám neozveme do 2 pracovních dnů, napište nám na <b id="omail"></b> a uveďte číslo objednávky.</p><p id="onote" class="mu"></p><button id="ook" class="main">Zavřít</button></div>
+ <div id="odone" hidden><h2 style="font-size:18px;margin:6px 0">Děkujeme, máme ji</h2><p>Číslo: <b id="oref"></b></p><div id="pay" hidden><p><b>Zaplaťte hned, jedním ze dvou způsobů:</b></p><p><b>1) QR kódem</b> v bankovní aplikaci:</p><div id="qr" style="max-width:220px"></div><p><b>2) převodem na účet</b> (např. z počítače):</p><p class="mu" id="paytxt" style="line-height:1.6"></p></div>
+ <p id="onext"></p><p class="mu">Pokud se vám neozveme do 2 pracovních dnů, napište nám na <b id="omail"></b> a uveďte číslo objednávky.</p><p id="onote" class="mu"></p><button id="ook" class="main">Zavřít</button></div>
 </div></div>
 <iframe name="sink" id="sink" style="display:none" title="Odeslání objednávky"></iframe>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -103,7 +103,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 <script>
 // ===== NASTAVENÍ (upravte podle sebe) =====
 // ===== NASTAVENÍ (ceny jsou s DPH) =====
-const CFG={printPrice:100,graphicFee:349,bulkLimit:50,orderEmail:"obchod@texo.cz",formId:"e62f0e25f9607e8c4ffc07fa830b39b5",iban:"CZ6062106701002206193038",accName:"TEXO",bigOrderQty:9999,
+const CFG={printPrice:100,graphicFee:349,bulkLimit:50,orderEmail:"obchod@texo.cz",formId:"e62f0e25f9607e8c4ffc07fa830b39b5",iban:"CZ1562106701002206315680",acct:"670100-2206315680/6210",accName:"TEXO",bigOrderQty:9999,
  ship:{"Zásilkovna":{pickup:[89,149],home:[129,179]},"PPL":{pickup:[76,78],home:[106,108]},"Balíkovna":{pickup:[89,149],home:[139,179]},"GLS":{pickup:[69,109],home:[94,134]}},lastOrder:"2026-12-18",shipText:"21. 12. 2026",maxUpload:9*1024*1024};
 // Data modelu z exportu produktů: Pánské tričko Classic (TEXO), cena podle velikosti, barvy [česky, název v e-shopu, odstín]
 const MODEL={name:"Pánské tričko Classic",sizes:["XS","S","M","L","XL","XXL","XXXL"],price:{XS:81,S:81,M:81,L:81,XL:81,XXL:91,XXXL:91},
@@ -188,7 +188,7 @@ $("scol").oninput=()=>{$("grid").innerHTML="";shown=0;render()};
 // ===== Odeslání objednávky (služba FormSubmit posílá e-mail s přílohami na CFG.orderEmail) =====
 const UPLOADS={};let waiting=false,wtimer=0,pendingNote="";
 const fmtD=d=>d.getDate()+". "+(d.getMonth()+1)+". "+d.getFullYear();
-function xmasText(){const dl=new Date(CFG.lastOrder+"T23:59:59");return new Date()<=dl?"Objednávky přijaté do "+fmtD(dl)+" vyrobíme a odešleme v pondělí "+CFG.shipText+". Doručení do Štědrého dne nemůžeme zaručit.":"Objednávky přijaté po "+fmtD(dl)+" nebudou doručeny před Vánoci."}
+function xmasText(){const dl=new Date(CFG.lastOrder+"T23:59:59");return new Date()<=dl?"Objednávky zaplacené do "+fmtD(dl)+" odešleme nejpozději v pondělí "+CFG.shipText+" (čím dřív objednáte, tím dřív je odešleme). Doručení do Štědrého dne nemůžeme zaručit.":"Objednávky přijaté po "+fmtD(dl)+" nebudou doručeny před Vánoci."}
 $("xmas").textContent=xmasText();$("xmas2").textContent=xmasText();$("omail").textContent=CFG.orderEmail;
 function sideObjs(sd){if(sd===side)return cv.getObjects().map(o=>{const c=o.getCenterPoint();return{o:o,x:c.x,y:c.y}});
  if(!data[sd])return[];try{return JSON.parse(data[sd]).objects.map(o=>({o:o,x:o.left,y:o.top}))}catch(e){return[]}}
@@ -208,7 +208,7 @@ function mockBlob(sd,layer){return new Promise(res=>{try{const c=document.create
  const im=new Image();im.onload=()=>{x.drawImage(im,0,0,480,520);c.toBlob(res,"image/png")};im.onerror=()=>res(null);im.src=URL.createObjectURL(layer)}catch(e){res(null)}})}
 function shipCost(){const c=CFG.ship[$("fs").value];if(!c)return 0;const m=document.querySelector('input[name=fm]:checked').value;return c[m][qty()>CFG.bigOrderQty?1:0]}
 function orderTotal(){return SUM+(qty()>CFG.bulkLimit?0:shipCost())}
-function refreshOrder(){const bulk=qty()>CFG.bulkLimit,m=document.querySelector('input[name=fm]:checked').value;
+function refreshOrder(){const bulk=qty()>CFG.bulkLimit;$("onotice").textContent=bulk?"Po odeslání se vám ozveme s cenovou nabídkou.":"Po odeslání zaplatíte QR kódem. Objednávku zpracujeme po přijetí platby a kontrole návrhu, potvrzení vám pošleme e-mailem.";const m=document.querySelector('input[name=fm]:checked').value;
  $("shipbox").hidden=bulk;$("fal").textContent=bulk?"Adresa":(m==="pickup"?"Výdejní místo (název a adresa nebo kód)":"Adresa pro doručení");
  $("osum").textContent=MODEL.name+", "+$("cname").textContent+" · zboží "+SUM+" Kč"+(bulk?"":" + doprava "+shipCost()+" Kč = celkem "+orderTotal()+" Kč")}
 function openOrder(){const q=qty();if(!q){say("Zadejte počet kusů alespoň u jedné velikosti.");return}
@@ -225,16 +225,19 @@ async function sendOrder(){const ref="TX-"+new Date().toISOString().slice(2,10).
  const hid=(n,v)=>{const i=document.createElement("input");i.type="hidden";i.name=n;i.value=v;f.appendChild(i)};
  hid("_subject",(qty()>CFG.bulkLimit?"POPTÁVKA ":"OBJEDNÁVKA ")+ref+" – návrhář potisku");hid("_captcha","false");hid("_template","table");
  const hp=document.createElement("input");hp.type="text";hp.name="_honey";hp.style.display="none";f.appendChild(hp);
+ const bulkO=qty()>CFG.bulkLimit;
+ hid("_autoresponse",bulkO?"Dobrý den, děkujeme za poptávku "+ref+" z návrháře potisku na texo.cz. Ozveme se vám s cenovou nabídkou. TEXO":
+  "Dobrý den, děkujeme za objednávku "+ref+" z návrháře potisku na texo.cz. Celkem k úhradě: "+orderTotal()+" Kč (zboží s potiskem "+SUM+" Kč + doprava "+shipCost()+" Kč). Platba: účet "+CFG.acct+" (IBAN "+CFG.iban+"), variabilní symbol "+ref.replace(/\D/g,"")+". Objednávku zpracujeme po přijetí platby a kontrole návrhu a potvrzení vám pošleme e-mailem. "+xmasText()+" TEXO");
  hid("Číslo",ref);hid("Jméno",$("fn").value);hid("email",$("fe").value);hid("Telefon",$("ft").value);hid("Adresa / výdejní místo",$("fa").value);hid("Poznámka zákazníka",$("fz").value);hid("Souhlas","ano");hid("Souhrn",summary(ref)+(note?"\n\n"+note:""));
  files.forEach((x,ix)=>{const i=document.createElement("input");i.type="file";i.name="priloha"+(ix+1);const dt=new DataTransfer();dt.items.add(x[1] instanceof File?x[1]:new File([x[1]],x[0],{type:"image/png"}));i.files=dt.files;f.appendChild(i)});
  document.body.appendChild(f);waiting=true;$("oref").textContent=ref;
  clearTimeout(wtimer);wtimer=setTimeout(()=>{if(waiting){waiting=false;$("osend").disabled=false;$("osend").textContent="Odeslat objednávku";$("oerr").textContent="Odeslání se nepodařilo. Zkuste to prosím znovu, nebo nám napište na "+CFG.orderEmail+"."}},60000);
  f.submit();setTimeout(()=>f.remove(),5000)}
-function showPay(){const bulk=qty()>CFG.bulkLimit;$("pay").hidden=true;if(bulk||!window.qrcode)return;
+function showPay(){const bulk=qty()>CFG.bulkLimit;$("pay").hidden=true;if(bulk)return;
  try{const vs=$("oref").textContent.replace(/\D/g,""),am=orderTotal().toFixed(2),spd="SPD*1.0*ACC:"+CFG.iban+"*AM:"+am+"*CC:CZK*X-VS:"+vs+"*MSG:OBJEDNAVKA "+$("oref").textContent;
- const q=qrcode(0,"M");q.addData(spd);q.make();$("qr").innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true});
- $("paytxt").textContent="Účet "+CFG.iban+" · částka "+orderTotal()+" Kč · variabilní symbol "+vs;$("pay").hidden=false}catch(e){}}
-$("sink").onload=()=>{if(!waiting)return;waiting=false;clearTimeout(wtimer);showPay();$("osend").disabled=false;$("onote").textContent=pendingNote;$("oform").hidden=true;$("odone").hidden=false};
+ $("qr").innerHTML="";if(window.qrcode){const q=qrcode(0,"M");q.addData(spd);q.make();$("qr").innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}
+ $("paytxt").innerHTML="Číslo účtu: <b>"+CFG.acct+"</b><br>IBAN: "+CFG.iban+"<br>Částka: <b>"+orderTotal()+" Kč</b><br>Variabilní symbol: <b>"+vs+"</b>";$("pay").hidden=false}catch(e){}}
+$("sink").onload=()=>{if(!waiting)return;waiting=false;clearTimeout(wtimer);showPay();$("otitle").textContent=qty()>CFG.bulkLimit?"Poptávka odeslána":"Objednávka odeslána";$("onext").textContent=qty()>CFG.bulkLimit?"Ozveme se vám s cenovou nabídkou.":"Po přijetí platby a kontrole návrhu vám pošleme potvrzení e-mailem.";$("osend").disabled=false;$("onote").textContent=pendingNote;$("oform").hidden=true;$("odone").hidden=false};
 $("ofrm").onsubmit=e=>{e.preventDefault();const em=$("fe").value.trim(),err=$("oerr");
  if(!$("fn").value.trim()||!em||!$("ft").value.trim()||!$("fa").value.trim()){err.textContent="Vyplňte prosím jméno, e-mail, telefon a adresu.";return}
  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){err.textContent="E-mail nemá správný tvar.";return}
