@@ -11,9 +11,9 @@ body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-app
 h1{font-size:20px;margin:0 0 2px}h2{font-size:13px;margin:14px 0 6px;color:var(--mu);font-weight:600}
 .app{display:grid;grid-template-columns:190px minmax(0,1fr);gap:12px;padding:12px;max-width:1120px;margin:auto}
 .app>section:nth-child(2){padding:10px}
-.sum{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 24px;align-items:start}
-@media(min-width:1100px){.app{grid-template-columns:240px minmax(0,1fr) 250px}.sum{grid-column:auto;display:block}.sum>div+div{margin-top:14px}}
-@media(max-width:639px){.app{grid-template-columns:1fr}.app>section:nth-child(2){padding:14px}}
+.bar{grid-column:1/-1;position:sticky;bottom:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;padding:10px 14px;box-shadow:0 -4px 14px rgba(0,0,0,.14)}.bar .sizes{grid-template-columns:repeat(8,40px);gap:4px}.bar .sizes label{font-size:11px}.bar .sizes input{padding:4px 2px}.bar .price{font-size:20px;line-height:1.2}.bar .bpr{flex:1 1 130px}.bar .bact{flex:0 0 170px}
+
+@media(max-width:639px){.app{grid-template-columns:1fr}.app>section:nth-child(2){padding:14px}.bar{position:static}.bar .bsz{flex:1 1 100%}.bar .sizes{grid-template-columns:repeat(4,1fr)}.bar .bact{flex:1 1 100%}}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px}
 button,select,input{font:inherit;color:var(--tx)}
 button{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;cursor:pointer}
@@ -32,7 +32,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko (prototyp) · verze 4</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko (prototyp) · verze 5</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -50,14 +50,14 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
    <div id="cv-box"><canvas id="c" width="480" height="520"></canvas></div>
    <div id="zones"></div>
   </div></div>
-  <h2>Umístit vybraný prvek do zóny</h2><div class="row" id="zb"></div>
+  <h2>Umístit vybraný prvek do zóny</h2><div class="row" id="zb"></div><div class="row" style="margin-top:8px"><button id="dl">Stáhnout potisk (PNG)</button><button id="del">Smazat prvek</button></div>
   <p class="mu">Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem ho otáčí.</p>
  </section>
- <section class="card sum">
-  <div><h2 style="margin-top:0">Velikosti a počet kusů</h2><div class="sizes" id="sizes"></div></div>
-  <div><h2 style="margin-top:0">Cena za kus</h2><div class="price" id="unit">–</div><div class="mu" id="info"></div><h2>Celkem</h2><div class="price" id="total">–</div></div>
-  <div><div style="margin:0 0 8px"><button class="main" id="cart">Přidat do košíku</button></div><div class="row"><button id="dl">Stáhnout potisk (PNG)</button><button id="del">Smazat prvek</button></div><p class="mu">Ceny jsou ukázkové, nastavíte je v bloku CFG na začátku skriptu.</p></div>
- </section>
+ <div class="bar card">
+  <div class="bsz"><div class="sizes" id="sizes"></div></div>
+  <div class="bpr"><div class="mu">Za kus: <b id="unit">–</b> <span id="info"></span></div><div class="price" id="total">–</div></div>
+  <div class="bact"><button class="main" id="cart">Přidat do košíku</button></div>
+ </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <script>
@@ -106,6 +106,6 @@ $("dl").onclick=()=>{cv.discardActiveObject();cv.renderAll();const a=document.cr
 $("cart").onclick=()=>say("Ukázka: tady se později odešle objednávka do košíku Shoptetu ("+qty()+" ks, "+$("total").textContent+").");
 cv.on("object:modified",price);drawShirt();price();
 // Zmenší náhled trička, aby se vešel do úzkého okna (telefon, úzký sloupec e-shopu)
-function fit(){const w=$("sw").clientWidth,k=Math.min(1,w/480);$("stage").style.transform=k<1?"scale("+k+")":"none";$("sw").style.height=(520*k)+"px";cv.calcOffset()}
+function fit(){const w=$("sw").clientWidth,wide=matchMedia("(min-width:640px)").matches;let k=Math.min(1,w/480);if(wide)k=Math.min(k,Math.max(.6,(innerHeight-330)/520));$("stage").style.transformOrigin=w<480?"0 0":"50% 0";$("stage").style.transform=k<1?"scale("+k+")":"none";$("sw").style.height=(520*k)+"px";cv.calcOffset()}
 if(window.ResizeObserver)new ResizeObserver(fit).observe($("sw"));window.addEventListener("resize",fit);fit();
 </script></body></html>
