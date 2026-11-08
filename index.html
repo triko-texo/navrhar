@@ -39,7 +39,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 17</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 19</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -104,7 +104,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 // ===== NASTAVENÍ (upravte podle sebe) =====
 // ===== NASTAVENÍ (ceny jsou s DPH) =====
 const CFG={printPrice:100,graphicFee:349,bulkLimit:50,orderEmail:"obchod@texo.cz",formId:"e62f0e25f9607e8c4ffc07fa830b39b5",iban:"CZ1562106701002206315680",acct:"670100-2206315680/6210",accName:"TEXO",bigOrderQty:9999,
- ship:{"Zásilkovna":{pickup:[89,149],home:[129,179]},"PPL":{pickup:[76,78],home:[106,108]},"Balíkovna":{pickup:[89,149],home:[139,179]},"GLS":{pickup:[69,109],home:[94,134]}},lastOrder:"2026-12-18",shipText:"21. 12. 2026",maxUpload:9*1024*1024};
+ ship:{"Zásilkovna":{pickup:[89,149],home:[129,179]},"PPL":{pickup:[76,78],home:[106,108]},"Balíkovna":{pickup:[89,149],home:[139,179]},"GLS":{pickup:[69,109],home:[94,134]}},lastOrder:"2026-12-18",guarantee:"2026-12-15",shipText:"21. 12. 2026",maxUpload:9*1024*1024};
 // Data modelu z exportu produktů: Pánské tričko Classic (TEXO), cena podle velikosti, barvy [česky, název v e-shopu, odstín]
 const MODEL={name:"Pánské tričko Classic",sizes:["XS","S","M","L","XL","XXL","XXXL"],price:{XS:81,S:81,M:81,L:81,XL:81,XXL:91,XXXL:91},
  colors:[["Bílá","White","#ffffff"],["Černá","Deep Black","#17181b"],["Červená","Tango Red","#c8102e"],["Červená","Red","#e30613"],["Oranžová","Orange","#f28c00"],["Modrá","West Royal Blue","#1f4fa3"],["Modrá","West French Navy","#1b2a4a"],["Šedá","Mouse Grey","#8d9096"],["Zelená","Green","#2e8b3a"],["Modrá","Blue Atol","#1da1c1"],["Šedá","Grey Melange","#b9bcc2"]]};
@@ -188,7 +188,7 @@ $("scol").oninput=()=>{$("grid").innerHTML="";shown=0;render()};
 // ===== Odeslání objednávky (služba FormSubmit posílá e-mail s přílohami na CFG.orderEmail) =====
 const UPLOADS={};let waiting=false,wtimer=0,pendingNote="";
 const fmtD=d=>d.getDate()+". "+(d.getMonth()+1)+". "+d.getFullYear();
-function xmasText(){const dl=new Date(CFG.lastOrder+"T23:59:59");return new Date()<=dl?"Objednávky zaplacené do "+fmtD(dl)+" odešleme nejpozději v pondělí "+CFG.shipText+" (čím dřív objednáte, tím dřív je odešleme). Doručení do Štědrého dne nemůžeme zaručit.":"Objednávky přijaté po "+fmtD(dl)+" nebudou doručeny před Vánoci."}
+function xmasText(){return "Objednávky expedujeme do tří pracovních dnů. Doručení do Štědrého dne garantujeme pro objednávky uhrazené do "+fmtD(new Date(CFG.guarantee+"T12:00:00"))+"."}
 $("xmas").textContent=xmasText();$("xmas2").textContent=xmasText();$("omail").textContent=CFG.orderEmail;
 function sideObjs(sd){if(sd===side)return cv.getObjects().map(o=>{const c=o.getCenterPoint();return{o:o,x:c.x,y:c.y}});
  if(!data[sd])return[];try{return JSON.parse(data[sd]).objects.map(o=>({o:o,x:o.left,y:o.top}))}catch(e){return[]}}
