@@ -9,8 +9,11 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
 h1{font-size:20px;margin:0 0 2px}h2{font-size:13px;margin:14px 0 6px;color:var(--mu);font-weight:600}
-.app{display:grid;grid-template-columns:250px minmax(0,1fr) 250px;gap:12px;padding:12px;max-width:1120px;margin:auto}
-@media(max-width:900px){.app{grid-template-columns:1fr}}
+.app{display:grid;grid-template-columns:210px minmax(0,1fr);gap:12px;padding:12px;max-width:1120px;margin:auto}
+.app>section:nth-child(2){padding:10px}
+.sum{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 24px;align-items:start}
+@media(min-width:1100px){.app{grid-template-columns:240px minmax(0,1fr) 250px}.sum{grid-column:auto;display:block}.sum>div+div{margin-top:14px}}
+@media(max-width:759px){.app{grid-template-columns:1fr}.app>section:nth-child(2){padding:14px}}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px}
 button,select,input{font:inherit;color:var(--tx)}
 button{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;cursor:pointer}
@@ -18,7 +21,7 @@ button:hover{border-color:var(--ac)}button:focus-visible,input:focus-visible,sel
 button.main{background:var(--ac);color:var(--acx);border-color:var(--ac);font-weight:600;width:100%;padding:11px}
 input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px solid var(--bd);border-radius:8px;background:var(--card);margin-bottom:6px}
 .row{display:flex;gap:6px;flex-wrap:wrap}.row>button{flex:1 1 auto}
-.sw{width:26px;height:26px;border-radius:50%;padding:0;border:2px solid var(--bd)}.sw.on{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
+.row>.sw{flex:0 0 26px}.sw{width:26px;height:26px;border-radius:50%;padding:0;border:2px solid var(--bd)}.sw.on{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
 .tabs{display:flex;gap:6px;margin-bottom:8px}.tabs button.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
 .wrap{overflow-x:auto}#stage{position:relative;width:480px;height:520px;margin:auto}
 #shirt{position:absolute;inset:0}#cv-box{position:absolute;inset:0}
@@ -48,14 +51,12 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
    <div id="zones"></div>
   </div></div>
   <h2>Umístit vybraný prvek do zóny</h2><div class="row" id="zb"></div>
+  <p class="mu">Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem ho otáčí.</p>
  </section>
- <section class="card">
-  <h2 style="margin-top:0">Velikosti a počet kusů</h2><div class="sizes" id="sizes"></div>
-  <h2>Cena za kus</h2><div class="price" id="unit">–</div><div class="mu" id="info"></div>
-  <h2>Celkem</h2><div class="price" id="total">–</div>
-  <div style="margin:14px 0 8px"><button class="main" id="cart">Přidat do košíku</button></div>
-  <div class="row"><button id="dl">Stáhnout potisk (PNG)</button><button id="del">Smazat prvek</button></div>
-  <p class="mu">Ceny jsou ukázkové, nastavíte je v bloku CFG na začátku skriptu.</p>
+ <section class="card sum">
+  <div><h2 style="margin-top:0">Velikosti a počet kusů</h2><div class="sizes" id="sizes"></div></div>
+  <div><h2 style="margin-top:0">Cena za kus</h2><div class="price" id="unit">–</div><div class="mu" id="info"></div><h2>Celkem</h2><div class="price" id="total">–</div></div>
+  <div><div style="margin:0 0 8px"><button class="main" id="cart">Přidat do košíku</button></div><div class="row"><button id="dl">Stáhnout potisk (PNG)</button><button id="del">Smazat prvek</button></div><p class="mu">Ceny jsou ukázkové, nastavíte je v bloku CFG na začátku skriptu.</p></div>
  </section>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
