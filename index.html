@@ -31,7 +31,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 .sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.sizes label{font-size:12px;color:var(--mu);text-align:center}
 .sizes input{width:100%;box-sizing:border-box;padding:5px;text-align:center;border:1px solid var(--bd);border-radius:6px;background:var(--card)}
 .price{font-size:28px;font-weight:700}.mu{color:var(--mu);font-size:13px}#msg{min-height:20px;font-size:13px;margin-top:8px;color:var(--ac)}
-#modal,#omodal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:10px}#modal[hidden],#omodal[hidden]{display:none}#ofrm label.mu{display:block;margin:6px 0 2px}#ofrm input[type=text],#ofrm input[type=email],#ofrm input[type=tel],#ofrm textarea{width:100%;box-sizing:border-box;padding:7px;border:1px solid var(--bd);border-radius:8px;background:var(--card);font:inherit;color:var(--tx)}#ofrm label.chk{display:flex;gap:8px;align-items:flex-start;margin:10px 0}#ofrm label.chk input{margin-top:3px}#oerr{color:#c0392b;min-height:20px;font-size:13px;margin:6px 0}
+#modal,#omodal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:10px}#modal[hidden],#omodal[hidden]{display:none}#ofrm label.mu{display:block;margin:6px 0 2px}#ofrm input[type=text],#ofrm input[type=email],#ofrm input[type=tel],#ofrm select,#ofrm textarea{width:100%;box-sizing:border-box;padding:7px;border:1px solid var(--bd);border-radius:8px;background:var(--card);font:inherit;color:var(--tx)}#ofrm label.chk{display:flex;gap:8px;align-items:flex-start;margin:10px 0}#ofrm label.chk input{margin-top:3px}#oerr{color:#c0392b;min-height:20px;font-size:13px;margin:6px 0}
 .mbox{background:var(--card);border:1px solid var(--bd);border-radius:12px;width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:14px}
 .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chips button{padding:3px 10px;border-radius:99px;font-size:13px}
@@ -39,7 +39,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 11</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 14</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -83,7 +83,10 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
    <label class="mu" for="fn">Jméno a příjmení</label><input type="text" id="fn" autocomplete="name">
    <label class="mu" for="fe">E-mail</label><input type="email" id="fe" autocomplete="email">
    <label class="mu" for="ft">Telefon</label><input type="tel" id="ft" autocomplete="tel">
-   <label class="mu" for="fa">Adresa pro doručení</label><textarea id="fa" rows="3" autocomplete="street-address" placeholder="Ulice a číslo, PSČ, město"></textarea>
+   <div id="shipbox"><label class="mu" for="fs">Doprava</label><select id="fs"></select>
+   <label class="mu chk"><input type="radio" name="fm" value="pickup" checked><span>Na výdejní místo / do boxu</span></label>
+   <label class="mu chk"><input type="radio" name="fm" value="home"><span>Na adresu</span></label></div>
+   <label class="mu" for="fa" id="fal">Adresa pro doručení</label><textarea id="fa" rows="3" autocomplete="street-address" placeholder="Ulice a číslo, PSČ, město"></textarea>
    <label class="mu" for="fz">Poznámka (nepovinné)</label><textarea id="fz" rows="2"></textarea>
    <label class="mu chk"><input type="checkbox" id="fc"><span>Souhlasím se zpracováním osobních údajů pro vyřízení objednávky a s <a href="https://www.texo.cz/obchodni-podminky/" target="_blank" rel="noopener">obchodními podmínkami</a>. Zásady: <a href="https://www.texo.cz/podminky-ochrany-osobnich-udaju/" target="_blank" rel="noopener">ochrana osobních údajů</a>.</span></label>
    <p class="mu">Po odeslání se vám ozveme e-mailem s potvrzením a platebními údaji. Objednávka je závazná až po našem potvrzení.</p>
@@ -91,14 +94,17 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
    <button type="submit" class="main" id="osend">Odeslat objednávku</button>
   </form>
  </div>
- <div id="odone" hidden><h2 style="font-size:18px;margin:6px 0">Děkujeme, objednávku jsme odeslali</h2><p>Číslo: <b id="oref"></b></p><p>Do e-mailu vám napíšeme potvrzení a platební údaje. Pokud se vám neozveme do 2 pracovních dnů, napište nám na <b id="omail"></b> a uveďte toto číslo.</p><p id="onote" class="mu"></p><button id="ook" class="main">Zavřít</button></div>
+ <div id="odone" hidden><h2 style="font-size:18px;margin:6px 0">Děkujeme, objednávku jsme odeslali</h2><p>Číslo: <b id="oref"></b></p><div id="pay" hidden><p><b>Zaplaťte hned QR kódem</b> v bankovní aplikaci:</p><div id="qr" style="max-width:220px"></div><p class="mu" id="paytxt"></p><p class="mu">Objednávku potvrdíme po přijetí platby a kontrole návrhu.</p></div>
+ <p>Potvrzení vám napíšeme e-mailem. Pokud se vám neozveme do 2 pracovních dnů, napište nám na <b id="omail"></b> a uveďte číslo objednávky.</p><p id="onote" class="mu"></p><button id="ook" class="main">Zavřít</button></div>
 </div></div>
 <iframe name="sink" id="sink" style="display:none" title="Odeslání objednávky"></iframe>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <script>
 // ===== NASTAVENÍ (upravte podle sebe) =====
 // ===== NASTAVENÍ (ceny jsou s DPH) =====
-const CFG={printPrice:100,graphicFee:349,bulkLimit:50,orderEmail:"obchod@texo.cz",lastOrder:"2026-12-18",shipText:"21. 12. 2026",maxUpload:9*1024*1024};
+const CFG={printPrice:100,graphicFee:349,bulkLimit:50,orderEmail:"obchod@texo.cz",formId:"e62f0e25f9607e8c4ffc07fa830b39b5",iban:"CZ6062106701002206193038",accName:"TEXO",bigOrderQty:9999,
+ ship:{"Zásilkovna":{pickup:[89,149],home:[129,179]},"PPL":{pickup:[76,78],home:[106,108]},"Balíkovna":{pickup:[89,149],home:[139,179]},"GLS":{pickup:[69,109],home:[94,134]}},lastOrder:"2026-12-18",shipText:"21. 12. 2026",maxUpload:9*1024*1024};
 // Data modelu z exportu produktů: Pánské tričko Classic (TEXO), cena podle velikosti, barvy [česky, název v e-shopu, odstín]
 const MODEL={name:"Pánské tričko Classic",sizes:["XS","S","M","L","XL","XXL","XXXL"],price:{XS:81,S:81,M:81,L:81,XL:81,XXL:91,XXXL:91},
  colors:[["Bílá","White","#ffffff"],["Černá","Deep Black","#17181b"],["Červená","Tango Red","#c8102e"],["Červená","Red","#e30613"],["Oranžová","Orange","#f28c00"],["Modrá","West Royal Blue","#1f4fa3"],["Modrá","West French Navy","#1b2a4a"],["Šedá","Mouse Grey","#8d9096"],["Zelená","Green","#2e8b3a"],["Modrá","Blue Atol","#1da1c1"],["Šedá","Grey Melange","#b9bcc2"]]};
@@ -124,14 +130,14 @@ function zoneOf(sd,x,y){let best=null;for(const k in ZONES){const z=ZONES[k];if(
 function printZones(){const set=new Set();cv.getObjects().forEach(o=>{const c=o.getCenterPoint();set.add(zoneOf(side,c.x,c.y))});
  if(data[other()]){try{JSON.parse(data[other()]).objects.forEach(o=>set.add(zoneOf(other(),o.left,o.top)))}catch(e){}}return set}
 function qty(){return [...document.querySelectorAll(".sizes input")].reduce((a,i)=>a+(parseInt(i.value)||0),0)}
-function price(){const zs=printZones(),n=zs.size;let q=0,sum=0;
+let SUM=0;function price(){const zs=printZones(),n=zs.size;let q=0,sum=0;
  [...document.querySelectorAll(".sizes input")].forEach((i,ix)=>{const c=parseInt(i.value)||0;q+=c;sum+=c*(MODEL.price[SIZES[ix]]+CFG.printPrice*n)});
  const g=$("gfx").checked&&q>0&&n>0?CFG.graphicFee:0;sum+=g;
  const pr=SIZES.map(s=>MODEL.price[s]+CFG.printPrice*n),lo=Math.min(...pr),hi=Math.max(...pr);
  $("unit").textContent=(lo===hi?lo:lo+"–"+hi)+" Kč";
  $("info").textContent="· "+(n===0?"bez potisku":n+" × potisk "+CFG.printPrice+" Kč")+(g?" + grafická úprava "+g+" Kč":"");
- $("total").textContent=sum+" Kč ("+q+" ks)";
- $("bulk").hidden=q<=CFG.bulkLimit;$("cart").textContent=q>CFG.bulkLimit?"Poslat poptávku":"Přidat do košíku";
+ SUM=sum;$("total").textContent=sum+" Kč ("+q+" ks)";
+ $("bulk").hidden=q<=CFG.bulkLimit;$("cart").textContent=q>CFG.bulkLimit?"Poslat poptávku":"Objednat";
  if([...zs].some(k=>k.indexOf("free-")===0))say("Prvek je mimo vyznačenou zónu a počítá se jako samostatný potisk. Použijte tlačítko zóny nebo ho přetáhněte do rámečku.")}
 function add(o){o.set({originX:"center",originY:"center",left:240,top:230});cv.add(o);cv.setActiveObject(o);cv.requestRenderAll();price()}
 function place(k){const z=ZONES[k],o=cv.getActiveObject();if(!o){say("Nejdřív vyberte text nebo obrázek na tričku.");return}
@@ -192,7 +198,7 @@ function describe(sd){return sideObjs(sd).map(r=>{const o=r.o,k=zoneOf(sd,r.x,r.
 function summary(ref){const L=[],zs=printZones(),n=zs.size;
  L.push("Číslo: "+ref,"Zboží: "+MODEL.name+", barva "+$("cname").textContent);
  [...document.querySelectorAll(".sizes input")].forEach((i,ix)=>{const c=parseInt(i.value)||0;if(c)L.push("Velikost "+SIZES[ix]+": "+c+" ks po "+(MODEL.price[SIZES[ix]]+CFG.printPrice*n)+" Kč")});
- L.push("Potisků na kus: "+n+" × "+CFG.printPrice+" Kč","Grafická úprava a kontrola: "+($("gfx").checked?"ANO (+"+CFG.graphicFee+" Kč)":"ne"),"Celkem s DPH: "+$("total").textContent,"","PŘEDNÍ STRANA:",describe("front")||"(prázdná)","","ZADNÍ STRANA:",describe("back")||"(prázdná)");return L.join("\n")}
+ L.push("Potisků na kus: "+n+" × "+CFG.printPrice+" Kč","Grafická úprava a kontrola: "+($("gfx").checked?"ANO (+"+CFG.graphicFee+" Kč)":"ne"),"Zboží s DPH: "+SUM+" Kč","Doprava: "+(qty()>CFG.bulkLimit?"dohodneme individuálně":$("fs").value+", "+(document.querySelector("input[name=fm]:checked").value==="pickup"?"výdejní místo":"na adresu")+", "+shipCost()+" Kč"),"CELKEM K ÚHRADĚ: "+orderTotal()+" Kč (VS "+ref.replace(/\D/g,"")+")","","PŘEDNÍ STRANA:",describe("front")||"(prázdná)","","ZADNÍ STRANA:",describe("back")||"(prázdná)");return L.join("\n")}
 function layerBlob(sd){return new Promise(res=>{try{const json=sd===side?JSON.stringify(cv.toJSON(["fname"])):data[sd];
  if(!json||!JSON.parse(json).objects.length){res(null);return}
  const sc=new fabric.StaticCanvas(null,{width:1440,height:1560});sc.setZoom(3);
@@ -200,31 +206,41 @@ function layerBlob(sd){return new Promise(res=>{try{const json=sd===side?JSON.st
 function mockBlob(sd,layer){return new Promise(res=>{try{const c=document.createElement("canvas");c.width=960;c.height=1040;const x=c.getContext("2d");x.scale(2,2);
  const p=new Path2D(PATH[sd]);x.fillStyle=color;x.fill(p);x.strokeStyle="rgba(0,0,0,.25)";x.lineWidth=2;x.stroke(p);
  const im=new Image();im.onload=()=>{x.drawImage(im,0,0,480,520);c.toBlob(res,"image/png")};im.onerror=()=>res(null);im.src=URL.createObjectURL(layer)}catch(e){res(null)}})}
+function shipCost(){const c=CFG.ship[$("fs").value];if(!c)return 0;const m=document.querySelector('input[name=fm]:checked').value;return c[m][qty()>CFG.bigOrderQty?1:0]}
+function orderTotal(){return SUM+(qty()>CFG.bulkLimit?0:shipCost())}
+function refreshOrder(){const bulk=qty()>CFG.bulkLimit,m=document.querySelector('input[name=fm]:checked').value;
+ $("shipbox").hidden=bulk;$("fal").textContent=bulk?"Adresa":(m==="pickup"?"Výdejní místo (název a adresa nebo kód)":"Adresa pro doručení");
+ $("osum").textContent=MODEL.name+", "+$("cname").textContent+" · zboží "+SUM+" Kč"+(bulk?"":" + doprava "+shipCost()+" Kč = celkem "+orderTotal()+" Kč")}
 function openOrder(){const q=qty();if(!q){say("Zadejte počet kusů alespoň u jedné velikosti.");return}
  if(!printZones().size){say("Přidejte na tričko alespoň jeden text nebo obrázek.");return}
  const bulk=q>CFG.bulkLimit;$("otitle").textContent=bulk?"Poptávka nad "+CFG.bulkLimit+" ks":"Dokončit objednávku";$("osend").textContent=bulk?"Odeslat poptávku":"Odeslat objednávku";
- $("osum").textContent=MODEL.name+", "+$("cname").textContent+", "+$("total").textContent;$("oerr").textContent="";$("oform").hidden=false;$("odone").hidden=true;$("omodal").hidden=false;$("fn").focus()}
+ if(!$("fs").options.length)Object.keys(CFG.ship).forEach(k=>$("fs").add(new Option(k,k)));refreshOrder();$("oerr").textContent="";$("oform").hidden=false;$("odone").hidden=true;$("omodal").hidden=false;$("fn").focus()}
 async function sendOrder(){const ref="TX-"+new Date().toISOString().slice(2,10).replace(/-/g,"")+"-"+Math.floor(1000+Math.random()*9000);
  $("osend").disabled=true;$("osend").textContent="Odesílám…";cv.discardActiveObject();cv.renderAll();
  const files=[];for(const sd of["front","back"]){const Lb=await layerBlob(sd);if(Lb){const nm=sd==="front"?"predek":"zada";files.push(["navrh-"+nm+".png",Lb]);const Mb=await mockBlob(sd,Lb);if(Mb)files.push(["nahled-"+nm+".png",Mb])}}
  const used=new Set();[...sideObjs("front"),...sideObjs("back")].forEach(r=>{if(r.o.fname&&UPLOADS[r.o.fname])used.add(r.o.fname)});
  const orig=[...used].map(n=>UPLOADS[n]),base=files.reduce((a,x)=>a+x[1].size,0),osz=orig.reduce((a,x)=>a+x.size,0);pendingNote="";let note="";
  if(base+osz<=CFG.maxUpload)orig.forEach(x=>files.push([x.name,x]));else if(orig.length){pendingNote="Vaše původní soubory jsou pro odeslání příliš velké ("+Math.round(osz/1048576)+" MB). Pošlete je prosím e-mailem a uveďte číslo objednávky: "+orig.map(x=>x.name).join(", ");note="PŮVODNÍ SOUBORY NEBYLY PŘILOŽENY (příliš velké): "+orig.map(x=>x.name).join(", ")}
- const f=document.createElement("form");f.method="POST";f.enctype="multipart/form-data";f.action="https://formsubmit.co/"+CFG.orderEmail;f.target="sink";f.style.display="none";
+ const f=document.createElement("form");f.method="POST";f.enctype="multipart/form-data";f.action="https://formsubmit.co/"+CFG.formId;f.target="sink";f.style.display="none";
  const hid=(n,v)=>{const i=document.createElement("input");i.type="hidden";i.name=n;i.value=v;f.appendChild(i)};
  hid("_subject",(qty()>CFG.bulkLimit?"POPTÁVKA ":"OBJEDNÁVKA ")+ref+" – návrhář potisku");hid("_captcha","false");hid("_template","table");
  const hp=document.createElement("input");hp.type="text";hp.name="_honey";hp.style.display="none";f.appendChild(hp);
- hid("Číslo",ref);hid("Jméno",$("fn").value);hid("email",$("fe").value);hid("Telefon",$("ft").value);hid("Adresa",$("fa").value);hid("Poznámka zákazníka",$("fz").value);hid("Souhlas","ano");hid("Souhrn",summary(ref)+(note?"\n\n"+note:""));
+ hid("Číslo",ref);hid("Jméno",$("fn").value);hid("email",$("fe").value);hid("Telefon",$("ft").value);hid("Adresa / výdejní místo",$("fa").value);hid("Poznámka zákazníka",$("fz").value);hid("Souhlas","ano");hid("Souhrn",summary(ref)+(note?"\n\n"+note:""));
  files.forEach((x,ix)=>{const i=document.createElement("input");i.type="file";i.name="priloha"+(ix+1);const dt=new DataTransfer();dt.items.add(x[1] instanceof File?x[1]:new File([x[1]],x[0],{type:"image/png"}));i.files=dt.files;f.appendChild(i)});
  document.body.appendChild(f);waiting=true;$("oref").textContent=ref;
  clearTimeout(wtimer);wtimer=setTimeout(()=>{if(waiting){waiting=false;$("osend").disabled=false;$("osend").textContent="Odeslat objednávku";$("oerr").textContent="Odeslání se nepodařilo. Zkuste to prosím znovu, nebo nám napište na "+CFG.orderEmail+"."}},60000);
  f.submit();setTimeout(()=>f.remove(),5000)}
-$("sink").onload=()=>{if(!waiting)return;waiting=false;clearTimeout(wtimer);$("osend").disabled=false;$("onote").textContent=pendingNote;$("oform").hidden=true;$("odone").hidden=false};
+function showPay(){const bulk=qty()>CFG.bulkLimit;$("pay").hidden=true;if(bulk||!window.qrcode)return;
+ try{const vs=$("oref").textContent.replace(/\D/g,""),am=orderTotal().toFixed(2),spd="SPD*1.0*ACC:"+CFG.iban+"*AM:"+am+"*CC:CZK*X-VS:"+vs+"*MSG:OBJEDNAVKA "+$("oref").textContent;
+ const q=qrcode(0,"M");q.addData(spd);q.make();$("qr").innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true});
+ $("paytxt").textContent="Účet "+CFG.iban+" · částka "+orderTotal()+" Kč · variabilní symbol "+vs;$("pay").hidden=false}catch(e){}}
+$("sink").onload=()=>{if(!waiting)return;waiting=false;clearTimeout(wtimer);showPay();$("osend").disabled=false;$("onote").textContent=pendingNote;$("oform").hidden=true;$("odone").hidden=false};
 $("ofrm").onsubmit=e=>{e.preventDefault();const em=$("fe").value.trim(),err=$("oerr");
  if(!$("fn").value.trim()||!em||!$("ft").value.trim()||!$("fa").value.trim()){err.textContent="Vyplňte prosím jméno, e-mail, telefon a adresu.";return}
  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){err.textContent="E-mail nemá správný tvar.";return}
  if(!$("fc").checked){err.textContent="Pro odeslání je potřeba souhlas se zpracováním údajů.";return}
  err.textContent="";sendOrder()};
+$("fs").onchange=refreshOrder;document.querySelectorAll("input[name=fm]").forEach(r=>r.onchange=refreshOrder);
 $("ox").onclick=()=>{$("omodal").hidden=true};$("ook").onclick=()=>{$("omodal").hidden=true};$("omodal").onclick=e=>{if(e.target.id==="omodal")$("omodal").hidden=true};
 $("gfx").onchange=price;cv.on("object:modified",price);drawShirt();price();
 // Zmenší náhled trička, aby se vešel do úzkého okna (telefon, úzký sloupec e-shopu)
