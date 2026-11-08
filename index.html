@@ -39,7 +39,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 19</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 20</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -95,7 +95,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
   </form>
  </div>
  <div id="odone" hidden><h2 style="font-size:18px;margin:6px 0">Děkujeme, máme ji</h2><p>Číslo: <b id="oref"></b></p><div id="pay" hidden><p><b>Zaplaťte hned, jedním ze dvou způsobů:</b></p><p><b>1) QR kódem</b> v bankovní aplikaci:</p><div id="qr" style="max-width:220px"></div><p><b>2) převodem na účet</b> (např. z počítače):</p><p class="mu" id="paytxt" style="line-height:1.6"></p></div>
- <p id="onext"></p><p class="mu">Pokud se vám neozveme do 2 pracovních dnů, napište nám na <b id="omail"></b> a uveďte číslo objednávky.</p><p id="onote" class="mu"></p><button id="ook" class="main">Zavřít</button></div>
+ <p id="onext"></p><p><a id="omailme" class="main" style="display:inline-block;text-decoration:none;padding:9px 14px;border-radius:10px" href="#">Poslat si údaje e-mailem</a></p><p class="mu">Pokud se vám neozveme do 2 pracovních dnů, napište nám na <b id="omail"></b> a uveďte číslo objednávky.</p><p id="onote" class="mu"></p><button id="ook" class="main">Zavřít</button></div>
 </div></div>
 <iframe name="sink" id="sink" style="display:none" title="Odeslání objednávky"></iframe>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -225,15 +225,15 @@ async function sendOrder(){const ref="TX-"+new Date().toISOString().slice(2,10).
  const hid=(n,v)=>{const i=document.createElement("input");i.type="hidden";i.name=n;i.value=v;f.appendChild(i)};
  hid("_subject",(qty()>CFG.bulkLimit?"POPTÁVKA ":"OBJEDNÁVKA ")+ref+" – návrhář potisku");hid("_captcha","false");hid("_template","table");
  const hp=document.createElement("input");hp.type="text";hp.name="_honey";hp.style.display="none";f.appendChild(hp);
- const bulkO=qty()>CFG.bulkLimit;
- hid("_autoresponse",bulkO?"Dobrý den, děkujeme za poptávku "+ref+" z návrháře potisku na texo.cz. Ozveme se vám s cenovou nabídkou. TEXO":
-  "Dobrý den, děkujeme za objednávku "+ref+" z návrháře potisku na texo.cz. Celkem k úhradě: "+orderTotal()+" Kč (zboží s potiskem "+SUM+" Kč + doprava "+shipCost()+" Kč). Platba: účet "+CFG.acct+" (IBAN "+CFG.iban+"), variabilní symbol "+ref.replace(/\D/g,"")+". Objednávku zpracujeme po přijetí platby a kontrole návrhu a potvrzení vám pošleme e-mailem. "+xmasText()+" TEXO");
- hid("Číslo",ref);hid("Jméno",$("fn").value);hid("email",$("fe").value);hid("Telefon",$("ft").value);hid("Adresa / výdejní místo",$("fa").value);hid("Poznámka zákazníka",$("fz").value);hid("Souhlas","ano");hid("Souhrn",summary(ref)+(note?"\n\n"+note:""));
+  hid("Číslo",ref);hid("Jméno",$("fn").value);hid("email",$("fe").value);hid("Telefon",$("ft").value);hid("Adresa / výdejní místo",$("fa").value);hid("Poznámka zákazníka",$("fz").value);hid("Souhlas","ano");hid("Souhrn",summary(ref)+(note?"\n\n"+note:""));
  files.forEach((x,ix)=>{const i=document.createElement("input");i.type="file";i.name="priloha"+(ix+1);const dt=new DataTransfer();dt.items.add(x[1] instanceof File?x[1]:new File([x[1]],x[0],{type:"image/png"}));i.files=dt.files;f.appendChild(i)});
  document.body.appendChild(f);waiting=true;$("oref").textContent=ref;
  clearTimeout(wtimer);wtimer=setTimeout(()=>{if(waiting){waiting=false;$("osend").disabled=false;$("osend").textContent="Odeslat objednávku";$("oerr").textContent="Odeslání se nepodařilo. Zkuste to prosím znovu, nebo nám napište na "+CFG.orderEmail+"."}},60000);
  f.submit();setTimeout(()=>f.remove(),5000)}
-function showPay(){const bulk=qty()>CFG.bulkLimit;$("pay").hidden=true;if(bulk)return;
+function mailMe(bulk){const ref=$("oref").textContent,vs=ref.replace(/\D/g,""),t=bulk?"Poptávka "+ref+" z návrháře potisku texo.cz. Ozveme se vám s cenovou nabídkou.":
+ "Objednávka "+ref+" z návrháře potisku texo.cz\nCelkem k úhradě: "+orderTotal()+" Kč\nČíslo účtu: "+CFG.acct+"\nIBAN: "+CFG.iban+"\nVariabilní symbol: "+vs+"\n\n"+xmasText()+"\nObjednávku zpracujeme po přijetí platby a kontrole návrhu.";
+ $("omailme").href="mailto:"+encodeURIComponent($("fe").value.trim())+"?subject="+encodeURIComponent((bulk?"Poptávka ":"Objednávka ")+ref+" – texo.cz")+"&body="+encodeURIComponent(t)}
+function showPay(){const bulk=qty()>CFG.bulkLimit;mailMe(bulk);$("pay").hidden=true;if(bulk)return;
  try{const vs=$("oref").textContent.replace(/\D/g,""),am=orderTotal().toFixed(2),spd="SPD*1.0*ACC:"+CFG.iban+"*AM:"+am+"*CC:CZK*X-VS:"+vs+"*MSG:OBJEDNAVKA "+$("oref").textContent;
  $("qr").innerHTML="";if(window.qrcode){const q=qrcode(0,"M");q.addData(spd);q.make();$("qr").innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}
  $("paytxt").innerHTML="Číslo účtu: <b>"+CFG.acct+"</b><br>IBAN: "+CFG.iban+"<br>Částka: <b>"+orderTotal()+" Kč</b><br>Variabilní symbol: <b>"+vs+"</b>";$("pay").hidden=false}catch(e){}}
