@@ -39,12 +39,12 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko (prototyp) · verze 7</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko (prototyp) · verze 8</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
   <div class="row"><select id="font" aria-label="Písmo" style="flex:2"><option>Arial</option><option>Georgia</option><option>Impact</option><option>Courier New</option><option>Trebuchet MS</option></select><input type="color" id="tcol" value="#000000" aria-label="Barva textu" style="flex:1;height:36px"></div>
-  <button id="addTxt" style="width:100%">Přidat text</button>
+  <button id="addTxt" style="width:100%">Přidat text</button><div class="mu" style="margin-top:4px">Jiné písmo? Nahrajte text jako obrázek.</div>
   <h2>Obrázek</h2>
   <input type="file" id="file" class="sr" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"><label for="file" class="filebtn">Nahrát obrázek</label>
   <h2>Motivy</h2><button id="openM" style="width:100%">Vyhledat motiv</button>
@@ -108,7 +108,7 @@ COLORS.forEach(c=>{const b=document.createElement("button");b.className="sw"+(c=
  b.onclick=()=>{color=c;document.querySelectorAll(".sw").forEach(x=>x.classList.remove("on"));b.classList.add("on");drawShirt()};$("cols").appendChild(b)});
 
 SIZES.forEach(s=>{const l=document.createElement("label");l.innerHTML=`${s}<input type="number" min="0" value="${s==="M"?1:0}" aria-label="Počet ${s}">`;l.querySelector("input").oninput=price;$("sizes").appendChild(l)});
-$("addTxt").onclick=()=>{const f=$("font").value;useFont(f,()=>add(new fabric.IText($("txt").value||"Váš text",{fontFamily:f,fill:$("tcol").value,fontSize:36})))};
+$("addTxt").onclick=()=>{const f=$("font").value;useFont(f,()=>add(new fabric.IText($("txt").value||"Váš text",{fontFamily:f,fill:$("tcol").value,fontSize:36})),$("txt").value)};
 $("tcol").oninput=()=>{const o=cv.getActiveObject();if(o&&o.type==="i-text"){o.set("fill",$("tcol").value);cv.requestRenderAll()}};
 $("font").onchange=()=>{const o=cv.getActiveObject(),f=$("font").value;if(o&&o.type==="i-text")useFont(f,()=>{o.set("fontFamily",f);o.initDimensions();o.setCoords();cv.requestRenderAll()})};
 $("file").onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>25*1024*1024){say("Soubor je větší než 25 MB. Zvolte menší soubor.");e.target.value="";return}const r=new FileReader();r.onload=()=>fabric.Image.fromURL(r.result,img=>{
@@ -122,7 +122,12 @@ $("cart").onclick=()=>say("Ukázka: tady se později odešle objednávka do koš
 // ===== Písma (Google Fonts, podpora češtiny ověřte vzorkem textu) =====
 const FONTS=["Arial","Georgia","Impact","Courier New","Roboto","Open Sans","Montserrat","Oswald","Anton","Archivo Black","Playfair Display","Lobster","Pacifico","Dancing Script","Caveat","Amatic SC","Bangers","Fredoka","Righteous","Russo One","Lilita One","Courgette","Press Start 2P"];
 $("font").innerHTML="";FONTS.forEach(f=>{const o=document.createElement("option");o.textContent=f;o.style.fontFamily=f;$("font").appendChild(o)});
-function useFont(f,cb){(document.fonts&&document.fonts.load?document.fonts.load('36px "'+f+'"'):Promise.resolve()).then(cb,cb)}
+const CZ="ěščřžýáíéúůďťňóĚŠČŘŽÝÁÍÉÚŮĎŤŇÓ";
+// Načte písmo včetně české sady znaků (Google Fonts je dělí na části podle znaků)
+function useFont(f,cb,t){const p=document.fonts&&document.fonts.load?document.fonts.load('36px "'+f+'"',(t||"")+CZ):Promise.resolve();p.then(cb,cb)}
+// Písma, která nemají všechny české znaky, se ze seznamu automaticky odstraní
+function hasCz(f){const c=document.createElement("canvas").getContext("2d");for(const ch of CZ){c.font='40px "'+f+'",serif';const a=c.measureText(ch).width;c.font='40px "'+f+'",sans-serif';if(Math.abs(a-c.measureText(ch).width)>.01)return false}return true}
+if(document.fonts&&document.fonts.load)Promise.all(FONTS.slice(4).map(f=>document.fonts.load('40px "'+f+'"',CZ).catch(()=>0))).then(()=>{[...$("font").options].forEach(o=>{if(FONTS.indexOf(o.textContent)>=4&&!hasCz(o.textContent))o.remove()})});
 // ===== Motivy (Iconify API: emotikony Noto a Fluent, symboly MDI a Tabler) =====
 const API="https://api.iconify.design",SETS={emo:"noto,fluent-emoji-flat",sym:"mdi,tabler"};
 const CHIPS=[["Smajlíci","face"],["Srdce","heart"],["Hvězdy","star"],["Zvířata","animal"],["Pes","dog"],["Kočka","cat"],["Jídlo","food"],["Pivo","beer"],["Sport","sport"],["Hudba","music"],["Oslava","party"],["Auto","car"],["Příroda","tree"],["Děti","baby"],["Láska","love"],["Koruna","crown"]];
