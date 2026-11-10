@@ -40,7 +40,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 39</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 40</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -126,7 +126,7 @@ const cv=new fabric.Canvas("c",{preserveObjectStacking:true});
 let side="front",data={front:null,back:null,left:null,right:null,label:null},color=COLORS[0];
 const say=t=>{$("msg").textContent=t};
 const SIMG={};SIDES.filter(n=>n!=="label").forEach(n=>{const k=n==="right"?"left":n,im=new Image();im.onload=()=>{if(n===side)drawShirt()};im.src=SHIRT[k].u;SIMG[n]=im});
-function paintShirt(ctx,sd,k){if(sd==="label"){ctx.save();ctx.scale(k,k);ctx.fillStyle="#eef0f2";ctx.fillRect(0,0,480,520);ctx.fillStyle="#9aa1a8";ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText("Vnitřní štítek – pohled zevnitř (zvětšeno, nahoře je límec)",240,70);
+function paintShirt(ctx,sd,k){if(sd==="label"){ctx.save();ctx.scale(k,k);ctx.fillStyle="#eef0f2";ctx.fillRect(0,0,480,520);ctx.fillStyle="#9aa1a8";ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText("Vnitřní štítek – pohled zevnitř (zvětšeno, plocha začíná 2 cm pod límcem)",240,70);
  ctx.fillStyle="#fff";ctx.strokeStyle="#b7bdc3";ctx.lineWidth=1.5;ctx.fillRect(93,92,294,336);ctx.strokeRect(93,92,294,336);ctx.restore();return}
  const q=sd==="right"?SHIRT.left:SHIRT[sd],im=SIMG[sd];if(!im.complete||!im.naturalWidth)return;
  const t=document.createElement("canvas");t.width=480*k;t.height=520*k;const g=t.getContext("2d");g.scale(k,k);
@@ -155,6 +155,13 @@ function frameOf(sd){const L=objsOf(sd);if(!L.length)return null;const P=L.flatM
 function sideBox(sd){const f=frameOf(sd);return f?{w:f.w,h:f.h}:null}
 const limOf=sd=>sd==="label"?CFG.labelMax:sd==="left"||sd==="right"?CFG.sleeveMax:CFG.bodyMax,f1=v=>(Math.round(v*10)/10).toString().replace(".",",");
 function fits(sd){const f=frameOf(sd);return!f||f.ok}
+function posText(sd){const L=objsOf(sd);if(!L.length)return"";const r=REF[sd],pc=pxOf(sd),f=v=>f1(Math.abs(v));let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+ L.forEach(o=>{const b=bboxOf(o);x0=Math.min(x0,b[0]);y0=Math.min(y0,b[1]);x1=Math.max(x1,b[2]);y1=Math.max(y1,b[3])});const P=[],dx=((x0+x1)/2-r.x)/pc;
+ if(sd==="label")P.push("plocha 2 cm pod límcem");else P.push(f((y0-r.y)/pc)+" cm "+r.yn);
+ if(r.b&&!r.nb)P.push(f((r.b-y1)/pc)+" cm "+r.bn);
+ P.push(Math.abs(dx)<0.3?"vodorovně na středu":f(dx)+" cm "+(dx>0?"vpravo":"vlevo")+" od středu (při pohledu na tričko)");
+ if(r.b){const dy=((y0+y1)/2-(r.y+r.b)/2)/pc;P.push(Math.abs(dy)<0.3?"svisle na středu výšky":f(dy)+" cm "+(dy>0?"pod":"nad")+" středem výšky")}
+ const F=frameOf(sd),a=F?Math.round(((F.t%360)+360)%360):0;if(a)P.push("otočeno o "+a+"°");return P.join(", ")}
 function sizeText(sd){const b=sideBox(sd);return b?"velikost "+f1(b.w)+" × "+f1(b.h)+" cm":"bez potisku"}
 function updateSize(){drawMeasure();const el=$("sz");if(!el)return;const b=sideBox(side),l=limOf(side),mx="max. "+f1(l[0])+" × "+f1(l[1])+" cm";
  if(!b){el.textContent="Největší velikost potisku na této straně: "+mx+" (na výšku i na šířku).";el.style.color="";return}
@@ -171,6 +178,8 @@ let SUM=0;function price(){const zs=printZones(),n=zs.size;let q=0,sum=0;
  $("bulk").hidden=q<=CFG.bulkLimit;$("cart").textContent=q>CFG.bulkLimit?"Poslat poptávku":"Objednat";
  updateSize()}
 const REF={front:{x:240,y:76,yn:"pod výstřihem",h:1,b:479,bn:"nad spodním lemem"},back:{x:240,y:44,yn:"pod límcem",h:1,b:479,bn:"nad spodním lemem"},left:{x:373,y:95,yn:"od ramene",h:1,b:236,bn:"nad okrajem rukávu"},right:{x:107,y:95,yn:"od ramene",h:1,b:236,bn:"nad okrajem rukávu"},label:{x:240,y:92,yn:"pod límcem",h:1,b:428,bn:"",nb:1}};
+let gVis=false,gT=0;
+function pokeGuides(){gVis=true;const g=$("mg");if(g)g.style.opacity=1;clearTimeout(gT);gT=setTimeout(()=>{gVis=false;const g=$("mg");if(g&&fits(side))g.style.opacity=0},1800)}
 function pill(x,y,t,bad,anchor){const w=t.length*6.1+12,x0=Math.max(20,Math.min(478-w,anchor==="start"?x:anchor==="end"?x-w:x-w/2));
  return `<rect x="${x0}" y="${y-9}" width="${w}" height="18" rx="9" fill="${bad?"#c0392b":"#1d2228"}" opacity=".9"/><text class="pt" x="${x0+w/2}" y="${y+4}" text-anchor="middle">${t}</text>`}
 function gl(x1,y1,x2,y2,cls){return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="gw"/><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${cls}"/>`}
@@ -183,8 +192,9 @@ function drawMeasure(){const svg=$("meas");if(!svg)return;const r=REF[side],pc=p
  if(L.length&&F){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;L.forEach(o=>{const b=bboxOf(o);x0=Math.min(x0,b[0]);y0=Math.min(y0,b[1]);x1=Math.max(x1,b[2]);y1=Math.max(y1,b[3])});
   const ok=F.ok,top=(y0-r.y)/pc,cx=(x0+x1)/2,cy=(y0+y1)/2,dx=(cx-r.x)/pc,P=(u,v)=>[u*F.c-v*F.n,u*F.n+v*F.c],Q=[P(F.a0,F.b0),P(F.a1,F.b0),P(F.a1,F.b1),P(F.a0,F.b1)],pts=Q.map(q=>q.join(",")).join(" ");
   h+=`<rect class="sel" x="${x0}" y="0" width="${x1-x0}" height="16"/><rect class="sel" x="0" y="${Math.max(16,y0)}" width="18" height="${Math.max(0,y1-Math.max(16,y0))}"/>`;
+  h+=`<g id="mg" style="transition:opacity .5s;opacity:${(gVis||!ok)?1:0}">`;
   // svislá vzdálenost od výstřihu / límce / ramene
-  if(top>0.2){h+=gl(cx,r.y,cx,y0,"gd");const ld=cx>300;h+=pill(ld?cx-8:cx+8,(y0-r.y)<40?Math.max(26,r.y-10):(r.y+y0)/2,f(top)+" cm "+r.yn.split(" ")[0]+" "+r.yn.split(" ").slice(1).join(" "),false,ld?"end":"start")}
+  if(side!=="label"&&top>0.2){h+=gl(cx,r.y,cx,y0,"gd");const ld=cx>300;h+=pill(ld?cx-8:cx+8,(y0-r.y)<40?Math.max(26,r.y-10):(r.y+y0)/2,f(top)+" cm "+r.yn.split(" ")[0]+" "+r.yn.split(" ").slice(1).join(" "),false,ld?"end":"start")}
   // vzdálenost od spodního lemu a vodorovná osa (polovina mezi výstřihem a lemem)
   const bot=(r.b-y1)/pc,ay=(r.y+r.b)/2;
   if(r.b&&!r.nb&&bot>0.2){const lb=cx>300;h+=gl(cx,y1,cx,r.b,"gd");h+=pill(lb?cx-8:cx+8,(r.b-y1)<40?Math.min(500,r.b+12):(y1+r.b)/2,f(bot)+" cm "+r.bn,false,lb?"end":"start")}
@@ -197,11 +207,11 @@ function drawMeasure(){const svg=$("meas");if(!svg)return;const r=REF[side],pc=p
   const m=(i,j)=>[(Q[i][0]+Q[j][0])/2,(Q[i][1]+Q[j][1])/2],tw=m(0,1),th=m(1,2);
   h+=pill(tw[0],tw[1]-14,f(F.w)+" cm",!ok);const hr=th[0]+60<470;h+=hr?pill(th[0]+8,th[1],f(F.h)+" cm",!ok,"start"):pill(m(3,0)[0]-8,m(3,0)[1],f(F.h)+" cm",!ok,"end");
   const ang=Math.round(((F.t%360)+360)%360);if(ang)h+=pill(cx,Math.min(508,y1+(r.h&&Math.abs(dx)<0.3?38:16)),"otočeno o "+ang+"°",false)}
- svg.innerHTML=h}
+ if(L.length&&F)h+="</g>";svg.innerHTML=h}
 const CENTER={front:[240,230],back:[240,198],left:[373,138],right:[107,138],label:[240,260]};
 function add(o){const g=GUIDE[side],c=CENTER[side];o.set({originX:"center",originY:"center",left:c[0],top:c[1]});
  const w=o.width*(o.scaleX||1),h=o.height*(o.scaleY||1),gw=w>h?Math.max(g.w,g.h):Math.min(g.w,g.h),gh=w>h?Math.min(g.w,g.h):Math.max(g.w,g.h),k=Math.min(gw*0.9/w,gh*0.9/h,1);if(k<1)o.scale((o.scaleX||1)*k);
- cv.add(o);cv.setActiveObject(o);cv.requestRenderAll();price()}
+ cv.add(o);cv.setActiveObject(o);cv.requestRenderAll();pokeGuides();price()}
 // Ovládací prvky
 MODEL.colors.forEach(m=>{const c=m[2],nm=m[0]+" – "+m[1],b=document.createElement("button");b.className="sw"+(c===color?" on":"");b.style.background=c;b.title=nm;b.setAttribute("aria-label","Barva "+nm);
  b.onclick=()=>{color=c;document.querySelectorAll(".sw").forEach(x=>x.classList.remove("on"));b.classList.add("on");$("cname").textContent=nm;drawShirt()};$("cols").appendChild(b)});$("cname").textContent=MODEL.colors[0][0]+" – "+MODEL.colors[0][1];
@@ -275,7 +285,7 @@ function describe(sd){return sideObjs(sd).map(r=>{const o=r.o;if(o.type==="i-tex
 function summary(ref){const L=[],zs=printZones(),n=zs.size;
  L.push("Číslo: "+ref,"Zboží: "+MODEL.name+", barva "+$("cname").textContent);
  [...document.querySelectorAll(".sizes input")].forEach((i,ix)=>{const c=parseInt(i.value)||0;if(c)L.push("Velikost "+SIZES[ix]+": "+c+" ks po "+(MODEL.price[SIZES[ix]]+CFG.printPrice*n)+" Kč")});
- L.push("Potisků na kus: "+n+" × "+CFG.printPrice+" Kč","Grafická úprava a kontrola: "+($("gfx").checked?"ANO (+"+CFG.graphicFee+" Kč)":"ne"),"Zboží s DPH: "+SUM+" Kč","Doprava: "+(qty()>CFG.bulkLimit?"dohodneme individuálně":$("fs").value+", "+(document.querySelector("input[name=fm]:checked").value==="pickup"?"výdejní místo":"na adresu")+", "+shipCost()+" Kč"),"CELKEM K ÚHRADĚ: "+orderTotal()+" Kč (VS "+ref.replace(/\D/g,"")+")","",...SIDES.flatMap(sd=>{const d=describe(sd);return d?["",SIDENAME[sd]+" ("+sizeText(sd)+"):",d]:[]}));return L.join("\n")}
+ L.push("Potisků na kus: "+n+" × "+CFG.printPrice+" Kč","Grafická úprava a kontrola: "+($("gfx").checked?"ANO (+"+CFG.graphicFee+" Kč)":"ne"),"Zboží s DPH: "+SUM+" Kč","Doprava: "+(qty()>CFG.bulkLimit?"dohodneme individuálně":$("fs").value+", "+(document.querySelector("input[name=fm]:checked").value==="pickup"?"výdejní místo":"na adresu")+", "+shipCost()+" Kč"),"CELKEM K ÚHRADĚ: "+orderTotal()+" Kč (VS "+ref.replace(/\D/g,"")+")","",...SIDES.flatMap(sd=>{const d=describe(sd);return d?["",SIDENAME[sd]+" ("+sizeText(sd)+"; "+posText(sd)+"):",d]:[]}));return L.join("\n")}
 function layerBlob(sd){return new Promise(res=>{try{const json=sd===side?JSON.stringify(cv.toJSON(["fname"])):data[sd];
  if(!json||!JSON.parse(json).objects.length){res(null);return}
  const sc=new fabric.StaticCanvas(null,{width:1440,height:1560});sc.setZoom(3);
@@ -327,14 +337,15 @@ $("ofrm").onsubmit=e=>{e.preventDefault();const em=$("fe").value.trim(),err=$("o
 $("fs").onchange=refreshOrder;document.querySelectorAll("input[name=fm]").forEach(r=>r.onchange=refreshOrder);
 $("ox").onclick=()=>{$("omodal").hidden=true};$("ook").onclick=()=>{$("omodal").hidden=true};$("omodal").onclick=e=>{if(e.target.id==="omodal")$("omodal").hidden=true};
 $("gfx").onchange=price;cv.on("object:modified",price);const keep=o=>({left:o.left,top:o.top,scaleX:o.scaleX,scaleY:o.scaleY,angle:o.angle});
-cv.on("mouse:down",e=>{const o=e.target;if(o){o._ok=keep(o);o._wasOk=fits(side)}});
+cv.on("mouse:down",e=>{const o=e.target;if(o){o._ok=keep(o);o._wasOk=fits(side);pokeGuides();drawMeasure()}});
 function shrinkToFit(o){let i=0;while(!fits(side)&&i<120){o.scaleX*=0.98;o.scaleY*=0.98;i++}o.setCoords()}
 function syncRot(){const o=cv.getActiveObject(),a=o?Math.round(((o.angle||0)%360+360)%360):0;$("rot").value=a;$("rotv").textContent=a+"°";$("rot").disabled=!o}
-$("rot").oninput=()=>{const o=cv.getActiveObject();if(!o)return;o.rotate(+$("rot").value);if(!fits(side))shrinkToFit(o);o.setCoords();o._ok=keep(o);cv.requestRenderAll();$("rotv").textContent=$("rot").value+"°";updateSize()};
+$("rot").oninput=()=>{const o=cv.getActiveObject();if(!o)return;pokeGuides();o.rotate(+$("rot").value);if(!fits(side))shrinkToFit(o);o.setCoords();o._ok=keep(o);cv.requestRenderAll();$("rotv").textContent=$("rot").value+"°";updateSize()};
 $("rot").onchange=price;
 ["selection:created","selection:updated","selection:cleared"].forEach(ev=>cv.on(ev,syncRot));
 cv.on("object:rotating",e=>{const o=e.target;if(o&&!fits(side)){shrinkToFit(o);cv.requestRenderAll()}if(o)o._ok=keep(o);syncRot();updateSize()});
 cv.on("object:moving",e=>{const o=e.target,r=REF[side];if(!o)return;if(r.h&&Math.abs(o.left-r.x)<4){o.left=r.x;o.setCoords()}if(r.b){const ay=(r.y+r.b)/2;if(Math.abs(o.top-ay)<4){o.top=ay;o.setCoords()}}});
+["object:moving","object:scaling","object:rotating"].forEach(ev=>cv.on(ev,pokeGuides));
 ["object:moving","object:scaling"].forEach(ev=>cv.on(ev,e=>{const o=e.target;if(!o)return;
  if(o._wasOk&&o._ok&&!fits(side)){o.set(o._ok);o.setCoords();cv.requestRenderAll()}else if(o._ok&&fits(side))o._ok=keep(o);updateSize()}));
 cv.on("text:changed",updateSize);drawShirt();price();
