@@ -40,7 +40,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 38</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 39</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -170,7 +170,7 @@ let SUM=0;function price(){const zs=printZones(),n=zs.size;let q=0,sum=0;
  SUM=sum;$("total").textContent=sum+" Kč ("+q+" ks)";
  $("bulk").hidden=q<=CFG.bulkLimit;$("cart").textContent=q>CFG.bulkLimit?"Poslat poptávku":"Objednat";
  updateSize()}
-const REF={front:{x:240,y:76,yn:"pod výstřihem",h:1,b:479,bn:"nad spodním lemem"},back:{x:240,y:44,yn:"pod límcem",h:1,b:479,bn:"nad spodním lemem"},left:{x:373,y:95,yn:"od ramene",h:0,b:236,bn:"nad okrajem rukávu"},right:{x:107,y:95,yn:"od ramene",h:0,b:236,bn:"nad okrajem rukávu"},label:{x:240,y:92,yn:"pod límcem",h:1,b:null,bn:""}};
+const REF={front:{x:240,y:76,yn:"pod výstřihem",h:1,b:479,bn:"nad spodním lemem"},back:{x:240,y:44,yn:"pod límcem",h:1,b:479,bn:"nad spodním lemem"},left:{x:373,y:95,yn:"od ramene",h:1,b:236,bn:"nad okrajem rukávu"},right:{x:107,y:95,yn:"od ramene",h:1,b:236,bn:"nad okrajem rukávu"},label:{x:240,y:92,yn:"pod límcem",h:1,b:428,bn:"",nb:1}};
 function pill(x,y,t,bad,anchor){const w=t.length*6.1+12,x0=Math.max(20,Math.min(478-w,anchor==="start"?x:anchor==="end"?x-w:x-w/2));
  return `<rect x="${x0}" y="${y-9}" width="${w}" height="18" rx="9" fill="${bad?"#c0392b":"#1d2228"}" opacity=".9"/><text class="pt" x="${x0+w/2}" y="${y+4}" text-anchor="middle">${t}</text>`}
 function gl(x1,y1,x2,y2,cls){return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="gw"/><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${cls}"/>`}
@@ -187,8 +187,8 @@ function drawMeasure(){const svg=$("meas");if(!svg)return;const r=REF[side],pc=p
   if(top>0.2){h+=gl(cx,r.y,cx,y0,"gd");const ld=cx>300;h+=pill(ld?cx-8:cx+8,(y0-r.y)<40?Math.max(26,r.y-10):(r.y+y0)/2,f(top)+" cm "+r.yn.split(" ")[0]+" "+r.yn.split(" ").slice(1).join(" "),false,ld?"end":"start")}
   // vzdálenost od spodního lemu a vodorovná osa (polovina mezi výstřihem a lemem)
   const bot=(r.b-y1)/pc,ay=(r.y+r.b)/2;
-  if(r.b&&bot>0.2){const lb=cx>300;h+=gl(cx,y1,cx,r.b,"gd");h+=pill(lb?cx-8:cx+8,(r.b-y1)<40?Math.min(500,r.b+12):(y1+r.b)/2,f(bot)+" cm "+r.bn,false,lb?"end":"start")}
-  if(!r.b){}else if(Math.abs(cy-ay)<2){h+=gl(18,ay,480,ay,"gc");h+=pill(Math.min(450,x1+12),ay-14,"na středu výšky",false,"start")}else h+=gl(18,ay,480,ay,"gf");
+  if(r.b&&!r.nb&&bot>0.2){const lb=cx>300;h+=gl(cx,y1,cx,r.b,"gd");h+=pill(lb?cx-8:cx+8,(r.b-y1)<40?Math.min(500,r.b+12):(y1+r.b)/2,f(bot)+" cm "+r.bn,false,lb?"end":"start")}
+  if(!r.b){}else if(Math.abs(cy-ay)<2){h+=gl(18,ay,480,ay,"gc");h+=pill(Math.max(30,x0-12),ay-14,"na středu výšky",false,"end")}else h+=gl(18,ay,480,ay,"gf");
   // vodorovně: střed
   if(r.h){if(Math.abs(dx)<0.3){h+=gl(r.x,16,r.x,520,"gc");h+=pill(r.x,y1+16,"na středu",false)}
    else{h+=gl(r.x,16,r.x,520,"gf");h+=gl(r.x,cy,cx,cy,"gd");h+=pill((r.x+cx)/2,cy-14,f(dx)+" cm od středu",false)}}
