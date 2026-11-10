@@ -15,6 +15,7 @@ h1{font-size:20px;margin:0 0 2px}h2{font-size:13px;margin:10px 0 4px;color:var(-
 .app>section:nth-child(2){padding:10px}
 .bar{grid-column:1/-1;position:sticky;bottom:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 14px;box-shadow:0 -4px 14px rgba(0,0,0,.14)}.bar .sizes{grid-template-columns:repeat(7,40px);gap:4px}.bar .sizes label{font-size:11px}.bar .sizes input{padding:4px 2px}.bar .price{font-size:20px;line-height:1.2}.bar .bpr{flex:1 1 110px}.bar .bact{flex:0 0 150px}
 
+@media(min-width:1000px){.app{grid-template-columns:200px minmax(0,1fr) 270px;max-width:1600px;align-items:start}.bar{grid-column:3;grid-row:1;position:sticky;top:12px;flex-direction:column;align-items:stretch;box-shadow:none}.bar .bsz,.bar .bpr,.bar .bact{flex:0 0 auto;width:100%}.bar .sizes{grid-template-columns:repeat(4,1fr)}.bar .price{font-size:24px}}
 @media(max-width:639px){.app{grid-template-columns:1fr}.app>section:nth-child(2){padding:14px}.bar{position:static}.bar .bsz{flex:1 1 100%}.bar .sizes{grid-template-columns:repeat(4,1fr)}.bar .bact{flex:1 1 100%}}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px}
 button,select,input{font:inherit;color:var(--tx)}
@@ -39,7 +40,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 32</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 33</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -60,9 +61,9 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
   </div></div>
   <div class="row" style="margin-top:8px;align-items:center"><label for="rot" class="mu">Otočení vybraného prvku</label><input type="range" id="rot" min="0" max="359" step="1" value="0" style="flex:1;min-width:120px"><b id="rotv">0°</b></div>
   <div class="row" style="margin-top:8px"><button id="dl">Stáhnout potisk (PNG)</button><button id="del">Smazat prvek</button></div>
-  <p class="mu" id="sz" style="font-weight:600"></p>
-  <p class="mu" id="xmas"></p>
-  <p class="mu">Pravítka a popisky ukazují velikost a polohu potisku v cm (měřeno od výstřihu, límce nebo ramene). Největší velikost: předek a záda 20 × 29,7 cm (na výšku, na šířku i šikmo), rukáv a štítek uvnitř 10,5 × 12 cm. Potisk lze umístit kamkoli na dané straně a nejde zvětšit nad limit. Každá strana s potiskem se počítá jako jeden potisk. Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem nebo posuvník Otočení ho natáčí o libovolný úhel (limit se měří podle rozměru motivu, takže i A4 jde natočit šikmo).</p>
+  <p class="mu" id="sz" style="font-weight:600;margin:8px 0 4px"></p>
+  <p class="mu" id="xmas" style="margin:4px 0"></p>
+  <details class="mu"><summary style="cursor:pointer">Jak na to a maximální velikosti</summary><p style="margin:6px 0 0">Pravítka a popisky ukazují velikost a polohu potisku v cm (měřeno od výstřihu, límce nebo ramene). Největší velikost: předek a záda 20 × 29,7 cm (na výšku, na šířku i šikmo), rukáv a štítek uvnitř 10,5 × 12 cm. Potisk lze umístit kamkoli na dané straně a nejde zvětšit nad limit. Každá strana s potiskem se počítá jako jeden potisk. Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem nebo posuvník Otočení ho natáčí o libovolný úhel (limit se měří podle rozměru motivu, takže i A4 jde natočit šikmo).</p></details>
  </section>
  <div class="bar card">
   <div class="bsz"><div class="sizes" id="sizes"></div></div>
@@ -308,6 +309,6 @@ cv.on("object:rotating",e=>{const o=e.target;if(o&&!fits(side)){shrinkToFit(o);c
  if(o._wasOk&&o._ok&&!fits(side)){o.set(o._ok);o.setCoords();cv.requestRenderAll()}else if(o._ok&&fits(side))o._ok=keep(o);updateSize()}));
 cv.on("text:changed",updateSize);drawShirt();price();
 // Zmenší náhled trička, aby se vešel do úzkého okna (telefon, úzký sloupec e-shopu)
-function fit(){const w=$("sw").clientWidth,wide=matchMedia("(min-width:640px)").matches;let k=Math.min(1,w/480);if(wide)k=Math.min(k,Math.max(.6,(innerHeight-370)/520));$("stage").style.transformOrigin=w<480?"0 0":"50% 0";$("stage").style.transform=k<1?"scale("+k+")":"none";$("sw").style.height=(520*k)+"px";cv.calcOffset()}
+function fit(){const w=$("sw").clientWidth,wide=matchMedia("(min-width:640px)").matches;let k=Math.min(1,w/480);if(wide)k=Math.min(k,Math.max(.5,(innerHeight-(matchMedia("(min-width:1000px)").matches?248:370))/520));$("stage").style.transformOrigin=w<480?"0 0":"50% 0";$("stage").style.transform=k<1?"scale("+k+")":"none";$("sw").style.height=(520*k)+"px";cv.calcOffset()}
 if(window.ResizeObserver)new ResizeObserver(fit).observe($("sw"));window.addEventListener("resize",fit);fit();
 </script></body></html>
