@@ -39,7 +39,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 29</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 30</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -61,7 +61,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
   <div class="row" style="margin-top:8px"><button id="dl">Stáhnout potisk (PNG)</button><button id="del">Smazat prvek</button></div>
   <p class="mu" id="sz" style="font-weight:600"></p>
   <p class="mu" id="xmas"></p>
-  <p class="mu">Pravítka a popisky ukazují velikost a polohu potisku v cm (měřeno od výstřihu, límce nebo ramene). Největší velikost: předek a záda 20 × 29,7 cm, rukáv a štítek uvnitř 10,5 × 12 cm. Potisk lze umístit kamkoli na dané straně a nejde zvětšit nad limit. Každá strana s potiskem se počítá jako jeden potisk. Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem ho otáčí.</p>
+  <p class="mu">Pravítka a popisky ukazují velikost a polohu potisku v cm (měřeno od výstřihu, límce nebo ramene). Největší velikost: předek a záda 20 × 29,7 cm (na výšku i na šířku), rukáv a štítek uvnitř 10,5 × 12 cm. Potisk lze umístit kamkoli na dané straně a nejde zvětšit nad limit. Každá strana s potiskem se počítá jako jeden potisk. Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem ho otáčí.</p>
  </section>
  <div class="bar card">
   <div class="bsz"><div class="sizes" id="sizes"></div></div>
@@ -146,8 +146,8 @@ const limOf=sd=>sd==="label"?CFG.labelMax:sd==="left"||sd==="right"?CFG.sleeveMa
 function fits(sd){const b=sideBox(sd);if(!b)return true;const l=limOf(sd),t=0.3;return(b.w<=l[0]+t&&b.h<=l[1]+t)||(b.w<=l[1]+t&&b.h<=l[0]+t)}
 function sizeText(sd){const b=sideBox(sd);return b?"velikost "+f1(b.w)+" × "+f1(b.h)+" cm":"bez potisku"}
 function updateSize(){drawMeasure();const el=$("sz");if(!el)return;const b=sideBox(side),l=limOf(side),mx="max. "+f1(l[0])+" × "+f1(l[1])+" cm";
- if(!b){el.textContent="Největší velikost potisku na této straně: "+mx+".";el.style.color="";return}
- const ok=fits(side);el.textContent="Potisk: "+f1(b.w)+" × "+f1(b.h)+" cm ("+mx+")"+(ok?"":" – je příliš velký, zmenšete ho.");el.style.color=ok?"":"#c0392b"}
+ if(!b){el.textContent="Největší velikost potisku na této straně: "+mx+" (na výšku i na šířku).";el.style.color="";return}
+ const ok=fits(side);el.textContent="Potisk: "+f1(b.w)+" × "+f1(b.h)+" cm ("+mx+", na výšku i na šířku)"+(ok?"":" – je příliš velký, zmenšete ho.");el.style.color=ok?"":"#c0392b"}
 function printZones(){const set=new Set();SIDES.forEach(sd=>{if(sd===side?cv.getObjects().length:(()=>{try{return JSON.parse(data[sd]).objects.length}catch(e){return 0}})())set.add(sd)});return set}
 function qty(){return [...document.querySelectorAll(".sizes input")].reduce((a,i)=>a+(parseInt(i.value)||0),0)}
 let SUM=0;function price(){const zs=printZones(),n=zs.size;let q=0,sum=0;
@@ -178,7 +178,7 @@ function drawMeasure(){const svg=$("meas");if(!svg)return;const r=REF[side],pc=p
  svg.innerHTML=h}
 const CENTER={front:[240,208],back:[240,176],left:[373,138],right:[107,138],label:[240,260]};
 function add(o){const g=GUIDE[side],c=CENTER[side];o.set({originX:"center",originY:"center",left:c[0],top:c[1]});
- const w=o.width*(o.scaleX||1),h=o.height*(o.scaleY||1),k=Math.min(g.w*0.9/w,g.h*0.9/h,1);if(k<1)o.scale((o.scaleX||1)*k);
+ const w=o.width*(o.scaleX||1),h=o.height*(o.scaleY||1),gw=w>h?Math.max(g.w,g.h):Math.min(g.w,g.h),gh=w>h?Math.min(g.w,g.h):Math.max(g.w,g.h),k=Math.min(gw*0.9/w,gh*0.9/h,1);if(k<1)o.scale((o.scaleX||1)*k);
  cv.add(o);cv.setActiveObject(o);cv.requestRenderAll();price()}
 // Ovládací prvky
 MODEL.colors.forEach(m=>{const c=m[2],nm=m[0]+" – "+m[1],b=document.createElement("button");b.className="sw"+(c===color?" on":"");b.style.background=c;b.title=nm;b.setAttribute("aria-label","Barva "+nm);
