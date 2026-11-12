@@ -40,7 +40,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 44</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 45</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -310,7 +310,7 @@ function openOrder(){const q=qty();const big=SIDES.filter(sd=>!fits(sd));if(big.
  if(!$("fs").options.length)Object.keys(CFG.ship).forEach(k=>$("fs").add(new Option(k,k)));refreshOrder();$("oerr").textContent="";$("oform").hidden=false;$("odone").hidden=true;$("omodal").hidden=false;$("fn").focus()}
 // Spolehlivá cesta: soubory se nahrají do úložiště Cloudinary (bez společného limitu), e-mail jde přes FormSubmit AJAX s potvrzením doručení.
 async function upOne(name,blob,ref){const fd=new FormData();fd.append("file",blob instanceof File?blob:new File([blob],name,{type:blob.type||"image/png"}));fd.append("upload_preset",CFG.preset);fd.append("tags",ref);
- for(let t=0;t<2;t++){try{const r=await fetch("https://api.cloudinary.com/v1_1/"+CFG.cloudName+"/auto/upload",{method:"POST",body:fd});if(r.ok){const j=await r.json();if(j.secure_url)return j.secure_url}}catch(e){}}return null}
+ for(let t=0;t<2;t++){try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),60000);const r=await fetch("https://api.cloudinary.com/v1_1/"+CFG.cloudName+"/auto/upload",{method:"POST",body:fd,signal:ac.signal});clearTimeout(tm);if(r.ok){const j=await r.json();if(j.secure_url)return j.secure_url}}catch(e){}}return null}
 async function sendCloud(ref,mocks,layers,orig){const items=[...mocks,...orig.map(x=>[x.name,x]),...layers],links=[],bad=[],shr=[];let i=0;pendingNote="";
  for(const it of items){i++;$("osend").textContent="Nahrávám soubory "+i+"/"+items.length+"…";const nm=it[0];let b=it[1];
   if(b.size>CFG.cloudMax){const c=await shrinkImg(b instanceof File?b:new File([b],nm,{type:b.type}),CFG.cloudMax);if(c&&c.size<=CFG.cloudMax){b=c;shr.push(nm)}}
@@ -320,11 +320,16 @@ async function sendCloud(ref,mocks,layers,orig){const items=[...mocks,...orig.ma
   "Číslo":ref,"Jméno":$("fn").value,email:$("fe").value,"Telefon":$("ft").value,"Adresa / výdejní místo":$("fa").value,"Poznámka zákazníka":$("fz").value,"Souhlas":"ano",
   "Souhrn":summary(ref)+(shr.length?"\n\nZMENŠENO NA 3508 px (A4 při 300 dpi): "+shr.join(", "):"")+(bad.length?"\n\nNENAHRÁNO: "+bad.join(", "):""),
   "Soubory ke stažení":links.join("\n")||"(žádné)"};
- $("osend").textContent="Odesílám objednávku…";let ok=false,msg="";
- for(let t=0;t<2&&!ok;t++){try{const r=await fetch("https://formsubmit.co/ajax/"+CFG.formId,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(body)});
+ $("osend").textContent="Odesílám objednávku… může to trvat až minutu, nezavírejte okno";let ok=false,msg="";
+ for(let t=0;t<1&&!ok;t++){try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),45000);const r=await fetch("https://formsubmit.co/ajax/"+CFG.formId,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(body),signal:ac.signal});clearTimeout(tm);
   const j=await r.json().catch(()=>({}));ok=r.ok&&String(j.success)==="true";msg=j.message||("HTTP "+r.status)}catch(e){msg=String(e)}}
  $("oref").textContent=ref;$("osend").disabled=false;$("osend").textContent="Odeslat objednávku";
- if(ok)orderDone();else $("oerr").textContent="Objednávku se nepodařilo odeslat ("+msg+"). Zkuste to prosím znovu, nebo nám napište na "+CFG.orderEmail+"."}
+ if(ok){orderDone();return}
+ // Záloha: když AJAX neodpoví, pošle se stejný text (s odkazy, bez příloh) klasickým formulářem jako dřív.
+ console.warn("FormSubmit AJAX selhal:",msg);const f=document.createElement("form");f.method="POST";f.action="https://formsubmit.co/"+CFG.formId;f.target="sink";f.style.display="none";
+ Object.entries(body).forEach(([n,v])=>{const i=document.createElement("input");i.type="hidden";i.name=n;i.value=v;f.appendChild(i)});
+ document.body.appendChild(f);waiting=true;clearTimeout(wtimer);wtimer=setTimeout(()=>{if(waiting){waiting=false;$("oerr").textContent="Objednávku se nepodařilo odeslat. Zkuste to prosím znovu, nebo nám napište na "+CFG.orderEmail+"."}},30000);
+ $("osend").disabled=true;$("osend").textContent="Odesílám…";f.submit();setTimeout(()=>f.remove(),5000)}
 async function sendOrder(){const ref="TX-"+new Date().toISOString().slice(2,10).replace(/-/g,"")+"-"+Math.floor(1000+Math.random()*9000);
  $("osend").disabled=true;$("osend").textContent="Odesílám…";cv.discardActiveObject();cv.renderAll();
  // Přílohy: náhledy (JPG) mají přednost, pak vrstvy návrhu (PNG), pak originály – celkem do CFG.maxUpload (FormSubmit má limit 10 MB).
@@ -362,7 +367,7 @@ function showPay(){const bulk=qty()>CFG.bulkLimit;mailMe(bulk);$("pay").hidden=t
  $("qr").innerHTML="";if(window.qrcode){const q=qrcode(0,"M");q.addData(spd);q.make();$("qr").innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}
  $("paytxt").innerHTML="Číslo účtu: <b>"+CFG.acct+"</b><br>IBAN: "+CFG.iban+"<br>Částka: <b>"+orderTotal()+" Kč</b><br>Variabilní symbol: <b>"+vs+"</b>";$("pay").hidden=false}catch(e){}}
 function orderDone(){showPay();$("otitle").textContent=qty()>CFG.bulkLimit?"Poptávka odeslána":"Objednávka odeslána";$("onext").textContent=qty()>CFG.bulkLimit?"Ozveme se vám s cenovou nabídkou.":"Po přijetí platby a kontrole návrhu vám pošleme potvrzení e-mailem.";$("osend").disabled=false;$("onote").textContent=pendingNote;$("oform").hidden=true;$("odone").hidden=false}
-$("sink").onload=()=>{if(!waiting)return;waiting=false;clearTimeout(wtimer);orderDone()};
+$("sink").onload=()=>{if(!waiting)return;waiting=false;clearTimeout(wtimer);$("osend").disabled=false;$("osend").textContent="Odeslat objednávku";orderDone()};
 $("ofrm").onsubmit=e=>{e.preventDefault();const em=$("fe").value.trim(),err=$("oerr");
  if(!$("fn").value.trim()||!em||!$("ft").value.trim()||!$("fa").value.trim()){err.textContent="Vyplňte prosím jméno, e-mail, telefon a adresu.";return}
  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){err.textContent="E-mail nemá správný tvar.";return}
