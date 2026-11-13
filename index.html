@@ -40,14 +40,14 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 46</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 48</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
   <div class="row"><select id="font" aria-label="Písmo" style="flex:2"><option>Arial</option><option>Georgia</option><option>Impact</option><option>Courier New</option><option>Trebuchet MS</option></select><input type="color" id="tcol" value="#000000" aria-label="Barva textu" style="flex:1;height:36px"></div>
   <button id="addTxt" style="width:100%">Přidat text</button><div class="mu" style="margin-top:4px">Jiné písmo? Nahrajte text jako obrázek.</div>
   <h2>Obrázek</h2>
-  <input type="file" id="file" class="sr" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"><label for="file" class="filebtn">Nahrát obrázek</label>
+  <input type="file" id="file" class="sr" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,application/pdf,.pdf"><label for="file" class="filebtn">Nahrát obrázek</label>
   <h2>Motivy</h2><button id="openM" style="width:100%">Vyhledat motiv</button>
   <div id="msg" role="status"></div>
  </section>
@@ -108,7 +108,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 // ===== NASTAVENÍ (upravte podle sebe) =====
 // ===== NASTAVENÍ (ceny jsou s DPH) =====
 const CFG={printPrice:100,graphicFee:349,bulkLimit:50,orderEmail:"obchod@texo.cz",formId:"e62f0e25f9607e8c4ffc07fa830b39b5",iban:"CZ1562106701002206315680",acct:"670100-2206315680/6210",accName:"TEXO",bigOrderQty:9999,
- ship:{"Zásilkovna":{pickup:[89,149],home:[129,179]},"PPL":{pickup:[76,78],home:[106,108]},"Balíkovna":{pickup:[89,149],home:[139,179]},"GLS":{pickup:[69,109],home:[94,134]}},lastOrder:"2026-12-18",guarantee:"2026-12-15",shipText:"21. 12. 2026",maxUpload:4.5*1024*1024,cloudName:"ibs5fasq",w3key:"43377c33-a9c9-4cb7-bca1-6da4a2f2dd50",preset:"navrhar",cloudMax:9.5*1024*1024,pxCm:6.18,bodyMax:[20,29.7],sleeveMax:[10.5,12],labelMax:[10.5,12],labelPxCm:26};
+ ship:{"Zásilkovna":{pickup:[89,149],home:[129,179]},"PPL":{pickup:[76,78],home:[106,108]},"Balíkovna":{pickup:[89,149],home:[139,179]},"GLS":{pickup:[69,109],home:[94,134]}},lastOrder:"2026-12-18",guarantee:"2026-12-15",shipText:"21. 12. 2026",maxUpload:4.5*1024*1024,cloudName:"ibs5fasq",w3key:"43377c33-a9c9-4cb7-bca1-6da4a2f2dd50",preset:"navrhar",cloudMax:9.5*1024*1024,pxCm:6.18,bodyMax:[20,29.7],sleeveMax:[10.5,12],labelMax:[10.5,12],labelPxCm:26,minDpi:150};
 // Data modelu z exportu produktů: Pánské tričko Classic (TEXO), cena podle velikosti, barvy [česky, název v e-shopu, odstín]
 const MODEL={name:"Pánské tričko Classic",sizes:["XS","S","M","L","XL","XXL","XXXL"],price:{XS:81,S:81,M:81,L:81,XL:81,XXL:91,XXXL:91},
  colors:[["Bílá","White","#ffffff"],["Černá","Deep Black","#17181b"],["Červená","Tango Red","#c8102e"],["Červená","Red","#e30613"],["Oranžová","Orange","#f28c00"],["Modrá","West Royal Blue","#1f4fa3"],["Modrá","West French Navy","#1b2a4a"],["Šedá","Mouse Grey","#8d9096"],["Zelená","Green","#2e8b3a"],["Modrá","Blue Atol","#1da1c1"],["Šedá","Grey Melange","#b9bcc2"]]};
@@ -155,6 +155,7 @@ function frameOf(sd){const L=objsOf(sd);if(!L.length)return null;const P=L.flatM
 function sideBox(sd){const f=frameOf(sd);return f?{w:f.w,h:f.h}:null}
 const limOf=sd=>sd==="label"?CFG.labelMax:sd==="left"||sd==="right"?CFG.sleeveMax:CFG.bodyMax,f1=v=>(Math.round(v*10)/10).toString().replace(".",",");
 function fits(sd){const f=frameOf(sd);return!f||f.ok}
+function dpiText(sd){const L=objsOf(sd).map(o=>[o.fname,dpiOf(sd,o)]).filter(x=>x[1]!==null);return L.length?"; rozlišení "+L.map(x=>x[0]+" asi "+x[1]+" dpi"+(x[1]<CFG.minDpi?" (NÍZKÉ)":"")).join(", "):""}
 function posText(sd){const L=objsOf(sd);if(!L.length)return"";const r=REF[sd],pc=pxOf(sd),f=v=>f1(Math.abs(v));let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
  L.forEach(o=>{const b=bboxOf(o);x0=Math.min(x0,b[0]);y0=Math.min(y0,b[1]);x1=Math.max(x1,b[2]);y1=Math.max(y1,b[3])});const P=[],dx=((x0+x1)/2-r.x)/pc;
  if(sd==="label")P.push("plocha 2 cm pod límcem");else P.push(f((y0-r.y)/pc)+" cm "+r.yn);
@@ -163,9 +164,14 @@ function posText(sd){const L=objsOf(sd);if(!L.length)return"";const r=REF[sd],pc
  if(r.b){const dy=((y0+y1)/2-(r.y+r.b)/2)/pc;P.push(Math.abs(dy)<0.3?"svisle na středu výšky":f(dy)+" cm "+(dy>0?"pod":"nad")+" středem výšky")}
  const F=frameOf(sd),a=F?Math.round(((F.t%360)+360)%360):0;if(a)P.push("otočeno o "+a+"°");return P.join(", ")}
 function sizeText(sd){const b=sideBox(sd);return b?"velikost "+f1(b.w)+" × "+f1(b.h)+" cm":"bez potisku"}
+// Ostrost nahraných obrázků: dpi = pixely obrázku / šířka potisku v palcích (SVG je vektor, ten se nekontroluje).
+function dpiOf(sd,o){const f=UPLOADS[o.fname];if(o.type!=="image"||!f||/svg|pdf/.test(f.type))return null;return Math.round(2.54*pxOf(sd)/Math.max(o.scaleX||1,o.scaleY||1))}
+function worstDpi(sd){let w=null;objsOf(sd).forEach(o=>{const d=dpiOf(sd,o);if(d!==null&&(!w||d<w.d))w={d:d,n:o.fname}});return w}
 function updateSize(){drawMeasure();const el=$("sz");if(!el)return;const b=sideBox(side),l=limOf(side),mx="max. "+f1(l[0])+" × "+f1(l[1])+" cm";
  if(!b){el.textContent="Největší velikost potisku na této straně: "+mx+" (na výšku i na šířku).";el.style.color="";return}
- const ok=fits(side);el.textContent="Potisk: "+f1(b.w)+" × "+f1(b.h)+" cm ("+mx+", na výšku i na šířku)"+(ok?"":" – je příliš velký, zmenšete ho.");el.style.color=ok?"":"#c0392b"}
+ const ok=fits(side),w=worstDpi(side),low=w&&w.d<CFG.minDpi;el.textContent="Potisk: "+f1(b.w)+" × "+f1(b.h)+" cm ("+mx+", na výšku i na šířku)"+(ok?"":" – je příliš velký, zmenšete ho.")+
+  (low?" Pozor: obrázek „"+w.n+"“ je na tuto velikost málo ostrý (asi "+w.d+" dpi, doporučujeme alespoň "+CFG.minDpi+" dpi). Zmenšete ho nebo nahrajte větší soubor, jinak může být tisk rozmazaný.":w?" Ostrost obrázku: asi "+w.d+" dpi – v pořádku.":"");
+ el.style.color=!ok?"#c0392b":low?"#b35c00":""}
 function printZones(){const set=new Set();SIDES.forEach(sd=>{if(sd===side?cv.getObjects().length:(()=>{try{return JSON.parse(data[sd]).objects.length}catch(e){return 0}})())set.add(sd)});return set}
 function qty(){return [...document.querySelectorAll(".sizes input")].reduce((a,i)=>a+(parseInt(i.value)||0),0)}
 let SUM=0;function price(){const zs=printZones(),n=zs.size;let q=0,sum=0;
@@ -220,8 +226,19 @@ SIZES.forEach(s=>{const l=document.createElement("label");l.innerHTML=`${s}<inpu
 $("addTxt").onclick=()=>{const f=$("font").value;useFont(f,()=>add(new fabric.IText($("txt").value||"Váš text",{fontFamily:f,fill:$("tcol").value,fontSize:36})),$("txt").value)};
 $("tcol").oninput=()=>{const o=cv.getActiveObject();if(o&&o.type==="i-text"){o.set("fill",$("tcol").value);cv.requestRenderAll()}};
 $("font").onchange=()=>{const o=cv.getActiveObject(),f=$("font").value;if(o&&o.type==="i-text")useFont(f,()=>{o.set("fontFamily",f);o.initDimensions();o.setCoords();cv.requestRenderAll()})};
-$("file").onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>25*1024*1024){say("Soubor je větší než 25 MB. Zvolte menší soubor.");e.target.value="";return}const r=new FileReader();r.onload=()=>fabric.Image.fromURL(r.result,img=>{
- if(img.width<1000)say("Obrázek má jen "+img.width+" px na šířku. Pro kvalitní tisk doporučujeme alespoň 1000 px.");else say("Obrázek nahrán ("+img.width+" px).");
+// PDF: knihovna pdf.js se načte až při prvním PDF, vykreslí 1. stránku jako náhled; do objednávky jde původní PDF.
+const PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";let pdfLoad=null;
+function loadPdfJs(){if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);if(!pdfLoad)pdfLoad=new Promise((ok,ko)=>{const sc=document.createElement("script");sc.src=PDFJS+"pdf.min.js";
+ sc.onload=()=>{try{pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS+"pdf.worker.min.js";ok(pdfjsLib)}catch(e){ko(e)}};sc.onerror=()=>{pdfLoad=null;ko(new Error("pdf.js"))};document.head.appendChild(sc)});return pdfLoad}
+async function addPdf(f){say("Načítám PDF…");try{const lib=await loadPdfJs(),doc=await lib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise,pg=await doc.getPage(1),v0=pg.getViewport({scale:1}),
+  k=Math.min(4,2000/Math.max(v0.width,v0.height)),v=pg.getViewport({scale:k}),c=document.createElement("canvas");c.width=Math.round(v.width);c.height=Math.round(v.height);
+  await pg.render({canvasContext:c.getContext("2d"),viewport:v,background:"rgba(0,0,0,0)"}).promise;
+  fabric.Image.fromURL(c.toDataURL("image/png"),img=>{img.scale(Math.min(160/img.width,160/img.height));img.fname=f.name;UPLOADS[f.name]=f;add(img);
+   say("PDF nahráno"+(doc.numPages>1?" (použita 1. stránka z "+doc.numPages+")":"")+". Do objednávky pošleme původní PDF.")})}
+ catch(e){console.warn(e);say("PDF se nepodařilo otevřít. Zkuste ho prosím uložit jako PNG nebo JPG.")}}
+$("file").onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>25*1024*1024){say("Soubor je větší než 25 MB. Zvolte menší soubor.");e.target.value="";return}
+ if(f.type==="application/pdf"||/\.pdf$/i.test(f.name)){addPdf(f.type?f:new File([f],f.name,{type:"application/pdf"}));e.target.value="";return}const r=new FileReader();r.onload=()=>fabric.Image.fromURL(r.result,img=>{
+ say("Obrázek nahrán ("+img.width+" × "+img.height+" px). Pod tričkem uvidíte, jestli je na zvolenou velikost dost ostrý.");
  img.scale(Math.min(160/img.width,160/img.height));img.fname=f.name;UPLOADS[f.name]=f;add(img)});r.readAsDataURL(f);e.target.value=""};
 $("del").onclick=()=>{cv.getActiveObjects().forEach(o=>cv.remove(o));cv.discardActiveObject();cv.requestRenderAll();price()};
 document.addEventListener("keydown",e=>{if(e.key==="Delete"&&document.activeElement.tagName!=="INPUT")$("del").click()});
@@ -285,7 +302,7 @@ function describe(sd){return sideObjs(sd).map(r=>{const o=r.o;if(o.type==="i-tex
 function summary(ref){const L=[],zs=printZones(),n=zs.size;
  L.push("Číslo: "+ref,"Zboží: "+MODEL.name+", barva "+$("cname").textContent);
  [...document.querySelectorAll(".sizes input")].forEach((i,ix)=>{const c=parseInt(i.value)||0;if(c)L.push("Velikost "+SIZES[ix]+": "+c+" ks po "+(MODEL.price[SIZES[ix]]+CFG.printPrice*n)+" Kč")});
- L.push("Potisků na kus: "+n+" × "+CFG.printPrice+" Kč","Grafická úprava a kontrola: "+($("gfx").checked?"ANO (+"+CFG.graphicFee+" Kč)":"ne"),"Zboží s DPH: "+SUM+" Kč","Doprava: "+(qty()>CFG.bulkLimit?"dohodneme individuálně":$("fs").value+", "+(document.querySelector("input[name=fm]:checked").value==="pickup"?"výdejní místo":"na adresu")+", "+shipCost()+" Kč"),"CELKEM K ÚHRADĚ: "+orderTotal()+" Kč (VS "+ref.replace(/\D/g,"")+")","",...SIDES.flatMap(sd=>{const d=describe(sd);return d?["",SIDENAME[sd]+" ("+sizeText(sd)+"; "+posText(sd)+"):",d]:[]}));return L.join("\n")}
+ L.push("Potisků na kus: "+n+" × "+CFG.printPrice+" Kč","Grafická úprava a kontrola: "+($("gfx").checked?"ANO (+"+CFG.graphicFee+" Kč)":"ne"),"Zboží s DPH: "+SUM+" Kč","Doprava: "+(qty()>CFG.bulkLimit?"dohodneme individuálně":$("fs").value+", "+(document.querySelector("input[name=fm]:checked").value==="pickup"?"výdejní místo":"na adresu")+", "+shipCost()+" Kč"),"CELKEM K ÚHRADĚ: "+orderTotal()+" Kč (VS "+ref.replace(/\D/g,"")+")","",...SIDES.flatMap(sd=>{const d=describe(sd);return d?["",SIDENAME[sd]+" ("+sizeText(sd)+"; "+posText(sd)+dpiText(sd)+"):",d]:[]}));return L.join("\n")}
 // Velký originál zmenší na nejvýš 3508 px (A4 při 300 dpi) a znovu uloží, aby se vešel do přílohy.
 function shrinkImg(file,budget){return new Promise(res=>{if(!/^image\/(jpeg|png|webp)$/.test(file.type)){res(null);return}const u=URL.createObjectURL(file),im=new Image();
  im.onload=async()=>{try{const k=Math.min(1,3508/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
