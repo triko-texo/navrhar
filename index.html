@@ -40,7 +40,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 45</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 46</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -108,7 +108,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 // ===== NASTAVENÍ (upravte podle sebe) =====
 // ===== NASTAVENÍ (ceny jsou s DPH) =====
 const CFG={printPrice:100,graphicFee:349,bulkLimit:50,orderEmail:"obchod@texo.cz",formId:"e62f0e25f9607e8c4ffc07fa830b39b5",iban:"CZ1562106701002206315680",acct:"670100-2206315680/6210",accName:"TEXO",bigOrderQty:9999,
- ship:{"Zásilkovna":{pickup:[89,149],home:[129,179]},"PPL":{pickup:[76,78],home:[106,108]},"Balíkovna":{pickup:[89,149],home:[139,179]},"GLS":{pickup:[69,109],home:[94,134]}},lastOrder:"2026-12-18",guarantee:"2026-12-15",shipText:"21. 12. 2026",maxUpload:4.5*1024*1024,cloudName:"ibs5fasq",preset:"navrhar",cloudMax:9.5*1024*1024,pxCm:6.18,bodyMax:[20,29.7],sleeveMax:[10.5,12],labelMax:[10.5,12],labelPxCm:26};
+ ship:{"Zásilkovna":{pickup:[89,149],home:[129,179]},"PPL":{pickup:[76,78],home:[106,108]},"Balíkovna":{pickup:[89,149],home:[139,179]},"GLS":{pickup:[69,109],home:[94,134]}},lastOrder:"2026-12-18",guarantee:"2026-12-15",shipText:"21. 12. 2026",maxUpload:4.5*1024*1024,cloudName:"ibs5fasq",w3key:"43377c33-a9c9-4cb7-bca1-6da4a2f2dd50",preset:"navrhar",cloudMax:9.5*1024*1024,pxCm:6.18,bodyMax:[20,29.7],sleeveMax:[10.5,12],labelMax:[10.5,12],labelPxCm:26};
 // Data modelu z exportu produktů: Pánské tričko Classic (TEXO), cena podle velikosti, barvy [česky, název v e-shopu, odstín]
 const MODEL={name:"Pánské tričko Classic",sizes:["XS","S","M","L","XL","XXL","XXXL"],price:{XS:81,S:81,M:81,L:81,XL:81,XXL:91,XXXL:91},
  colors:[["Bílá","White","#ffffff"],["Černá","Deep Black","#17181b"],["Červená","Tango Red","#c8102e"],["Červená","Red","#e30613"],["Oranžová","Orange","#f28c00"],["Modrá","West Royal Blue","#1f4fa3"],["Modrá","West French Navy","#1b2a4a"],["Šedá","Mouse Grey","#8d9096"],["Zelená","Green","#2e8b3a"],["Modrá","Blue Atol","#1da1c1"],["Šedá","Grey Melange","#b9bcc2"]]};
@@ -320,7 +320,14 @@ async function sendCloud(ref,mocks,layers,orig){const items=[...mocks,...orig.ma
   "Číslo":ref,"Jméno":$("fn").value,email:$("fe").value,"Telefon":$("ft").value,"Adresa / výdejní místo":$("fa").value,"Poznámka zákazníka":$("fz").value,"Souhlas":"ano",
   "Souhrn":summary(ref)+(shr.length?"\n\nZMENŠENO NA 3508 px (A4 při 300 dpi): "+shr.join(", "):"")+(bad.length?"\n\nNENAHRÁNO: "+bad.join(", "):""),
   "Soubory ke stažení":links.join("\n")||"(žádné)"};
- $("osend").textContent="Odesílám objednávku… může to trvat až minutu, nezavírejte okno";let ok=false,msg="";
+ $("osend").textContent="Odesílám objednávku…";let ok=false,msg="";
+ // 1) Web3Forms – rychlé, s potvrzením doručení
+ if(CFG.w3key){const w={access_key:CFG.w3key,subject:body._subject,from_name:"Návrhář potisku texo.cz",replyto:$("fe").value,botcheck:""};
+  Object.entries(body).forEach(([k,v])=>{if(k[0]!=="_")w[k]=v});
+  try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),20000);const r=await fetch("https://api.web3forms.com/submit",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(w),signal:ac.signal});clearTimeout(tm);
+   const j=await r.json().catch(()=>({}));ok=r.ok&&j.success===true;msg=j.message||("HTTP "+r.status)}catch(e){msg=String(e)}
+  if(!ok){console.warn("Web3Forms selhal:",msg);$("osend").textContent="Odesílám objednávku… může to trvat až minutu, nezavírejte okno"}}
+ // 2) záloha FormSubmit
  for(let t=0;t<1&&!ok;t++){try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),45000);const r=await fetch("https://formsubmit.co/ajax/"+CFG.formId,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(body),signal:ac.signal});clearTimeout(tm);
   const j=await r.json().catch(()=>({}));ok=r.ok&&String(j.success)==="true";msg=j.message||("HTTP "+r.status)}catch(e){msg=String(e)}}
  $("oref").textContent=ref;$("osend").disabled=false;$("osend").textContent="Odeslat objednávku";
