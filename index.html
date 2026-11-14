@@ -40,7 +40,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">verze 57</div>
+  <h1>Návrhář potisku</h1><div class="mu">verze 58</div>
   <h2>Tričko</h2><select id="model" aria-label="Typ trička"></select>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
@@ -95,7 +95,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
    <label class="mu chk"><input type="radio" name="fm" value="home"><span>Doručení na adresu (129 Kč)</span></label></div>
    <label class="mu" for="fa" id="fal">Adresa pro doručení</label><textarea id="fa" rows="3" autocomplete="street-address" placeholder="Ulice a číslo, PSČ, město"></textarea>
    <label class="mu" for="fz">Poznámka (nepovinné)</label><textarea id="fz" rows="2"></textarea>
-   <label class="mu chk"><input type="checkbox" id="fc"><span>Souhlasím se zpracováním osobních údajů pro vyřízení objednávky a s <a href="https://www.texo.cz/obchodni-podminky/" target="_blank" rel="noopener">obchodními podmínkami</a>. Zásady: <a href="https://www.texo.cz/podminky-ochrany-osobnich-udaju/" target="_blank" rel="noopener">ochrana osobních údajů</a>.</span></label>
+   <label class="mu chk"><input type="checkbox" id="fc"><span>Souhlasím s <a href="https://www.texo.cz/obchodni-podminky/" target="_blank" rel="noopener">obchodními podmínkami</a> a beru na vědomí <a href="https://www.texo.cz/podminky-ochrany-osobnich-udaju/" target="_blank" rel="noopener">informace o zpracování osobních údajů</a>.</span></label>
    <p class="mu" id="onotice"></p>
    <div id="oerr" role="alert"></div>
    <button type="submit" class="main" id="osend">Odeslat objednávku</button>
@@ -408,7 +408,7 @@ async function sendCloud(ref,mocks,layers,orig){const items=[...mocks,...orig.ma
   const u=b.size<=CFG.cloudMax?await upOne(nm,b,ref):null;u?links.push(nm+": "+u):bad.push(nm)}
  const ob=orig.map(x=>x.name).filter(n=>bad.includes(n));if(ob.length)pendingNote="Některé vaše soubory se nepodařilo nahrát. Pošlete je prosím e-mailem a uveďte číslo objednávky: "+ob.join(", ");
  const bulk=false,body={_subject:(bulk?"POPTÁVKA ":"OBJEDNÁVKA ")+ref+" – návrhář potisku",_template:"table",_captcha:"false",
-  "Číslo":ref,"Jméno":$("fn").value,email:$("fe").value,"Telefon":$("ft").value,"Adresa / výdejní místo":$("fa").value,"Poznámka zákazníka":$("fz").value,"Souhlas":"ano",
+  "Číslo":ref,"Jméno":$("fn").value,email:$("fe").value,"Telefon":$("ft").value,"Adresa / výdejní místo":$("fa").value,"Poznámka zákazníka":$("fz").value,"Obchodní podmínky":"odsouhlaseny, informace o zpracování údajů vzaty na vědomí",
   "Souhrn":summary(ref)+(shr.length?"\n\nZMENŠENO NA 3508 px (A4 při 300 dpi): "+shr.join(", "):"")+(bad.length?"\n\nNENAHRÁNO: "+bad.join(", "):""),
   "Soubory ke stažení":links.join("\n")||"(žádné)"};
  $("osend").textContent="Odesílám objednávku…";let ok=false,msg="";
@@ -449,7 +449,7 @@ $("sink").onload=()=>{if(!waiting)return;waiting=false;clearTimeout(wtimer);$("o
 $("ofrm").onsubmit=e=>{e.preventDefault();const em=$("fe").value.trim(),err=$("oerr");
  if(!$("fn").value.trim()||!em||!$("ft").value.trim()||!$("fa").value.trim()){err.textContent="Vyplňte prosím jméno, e-mail, telefon a adresu.";return}
  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){err.textContent="E-mail nemá správný tvar.";return}
- if(!$("fc").checked){err.textContent="Pro odeslání je potřeba souhlas se zpracováním údajů.";return}
+ if(!$("fc").checked){err.textContent="Pro odeslání je potřeba souhlasit s obchodními podmínkami.";return}
  err.textContent="";sendOrder()};
 document.querySelectorAll("input[name=fm]").forEach(r=>r.onchange=refreshOrder);
 $("ox").onclick=()=>{$("omodal").hidden=true};$("ook").onclick=()=>{$("omodal").hidden=true};$("omodal").onclick=e=>{if(e.target.id==="omodal")$("omodal").hidden=true};
