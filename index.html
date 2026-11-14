@@ -41,7 +41,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">verze 68</div>
+  <h1>Návrhář potisku</h1><div class="mu">verze 69</div>
   <h2>Tričko</h2><select id="model" aria-label="Typ trička"></select>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <div id="msg" role="status"></div>
@@ -113,7 +113,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
   </form>
  </div>
  <div id="odone" hidden><h2 style="font-size:18px;margin:6px 0">Děkujeme, máme ji</h2><p>Číslo: <b id="oref"></b></p><div id="pay" hidden><p><b>Zaplaťte hned, jedním ze dvou způsobů:</b></p><p><b>1) QR kódem</b> v bankovní aplikaci:</p><div id="qr" style="max-width:220px"></div><p><b>2) převodem na účet</b> (např. z počítače):</p><p class="mu" id="paytxt" style="line-height:1.6"></p></div>
- <p id="onext"></p><p><a id="omailme" class="main" style="display:inline-block;text-decoration:none;padding:9px 14px;border-radius:10px" href="#">Poslat si údaje e-mailem</a> <button type="button" id="ocopy" style="padding:9px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;cursor:pointer">Zkopírovat údaje</button></p><p class="mu" id="ocmsg"></p><p class="mu">Pokud se vám neozveme do 2 pracovních dnů, napište nám na <b id="omail"></b> a uveďte číslo objednávky.</p><p id="onote" class="mu"></p><p id="oroute" class="mu" style="font-size:11px"></p><button id="ook" class="main">Zavřít</button></div>
+ <p id="onext"></p><p><button type="button" id="ocopy" style="padding:9px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;cursor:pointer">Zkopírovat platební údaje</button> <span class="mu">nebo si obrazovku vyfoťte</span></p><p class="mu" id="ocmsg"></p><p class="mu">Pokud se vám neozveme do 2 pracovních dnů, napište nám na <b id="omail"></b> a uveďte číslo objednávky.</p><p id="onote" class="mu"></p><p id="oroute" class="mu" style="font-size:11px"></p><button id="ook" class="main">Zavřít</button></div>
 </div></div>
 <iframe name="sink" id="sink" style="display:none" title="Odeslání objednávky"></iframe>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -483,7 +483,7 @@ async function sendCloud(ref,mocks,layers,orig){const items=[...mocks,...orig.ma
   if(ok)ROUTE="Web3Forms ("+msg+")";else{console.warn("Web3Forms selhal:",msg);$("osend").textContent="Odesílám objednávku… může to trvat až minutu, nezavírejte okno"}}
  // 2) kopie na obchod@texo.cz přes FormSubmit vždy (na pozadí); když Web3Forms selhal, čeká se na ni
  const fsSend=()=>fetch("https://formsubmit.co/ajax/"+CFG.formId,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(body)});
- if(ok){fsSend().then(r=>r.json().then(j=>console.log("FormSubmit kopie:",r.status,j))).catch(e=>console.warn("FormSubmit kopie selhala:",e))}
+ if(ok){body._subject="KOPIE – "+body._subject;body["Poznámka systému"]="Záložní kopie. Stejná objednávka přišla i jako samostatný e-mail (Web3Forms). Pokud jste ho nedostali, platí tato kopie.";fsSend().then(r=>r.json().then(j=>console.log("FormSubmit kopie:",r.status,j))).catch(e=>console.warn("FormSubmit kopie selhala:",e))}
  for(let t=0;t<1&&!ok;t++){try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),45000);const r=await fetch("https://formsubmit.co/ajax/"+CFG.formId,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(body),signal:ac.signal});clearTimeout(tm);
   const j=await r.json().catch(()=>({}));ok=r.ok&&String(j.success)==="true";msg=j.message||("HTTP "+r.status);console.log("FormSubmit:",r.status,j);if(ok)ROUTE="FormSubmit ("+msg+")"}catch(e){msg=String(e)}}
  $("oref").textContent=ref;$("osend").disabled=false;$("osend").textContent="Odeslat objednávku";
@@ -504,7 +504,7 @@ function copyTxt(){const t=MAILTXT,ok=()=>{$("ocmsg").textContent="Údaje jsou z
 $("ocopy").onclick=copyTxt;
 function mailMe(bulk){const ref=$("oref").textContent,vs=ref.replace(/\D/g,""),t=bulk?"Poptávka "+ref+" z návrháře potisku texo.cz. Ozveme se vám s cenovou nabídkou.":
  "Objednávka "+ref+" z návrháře potisku texo.cz\nCelkem k úhradě: "+orderTotal()+" Kč\nČíslo účtu: "+CFG.acct+"\nIBAN: "+CFG.iban+"\nVariabilní symbol: "+vs+"\n\n"+xmasText()+"\nObjednávku zpracujeme po přijetí platby a kontrole návrhu.";
- MAILTXT=t;$("ocmsg").textContent="";$("omailme").href="mailto:"+encodeURIComponent($("fe").value.trim())+"?subject="+encodeURIComponent((bulk?"Poptávka ":"Objednávka ")+ref+" – texo.cz")+"&body="+encodeURIComponent(t)}
+ MAILTXT=t;$("ocmsg").textContent=""}
 function showPay(){const bulk=false;mailMe(bulk);$("pay").hidden=true;if(bulk)return;
  try{const vs=$("oref").textContent.replace(/\D/g,""),am=orderTotal().toFixed(2),spd="SPD*1.0*ACC:"+CFG.iban+"*AM:"+am+"*CC:CZK*X-VS:"+vs+"*MSG:OBJEDNAVKA "+$("oref").textContent;
  $("qr").innerHTML="";if(window.qrcode){const q=qrcode(0,"M");q.addData(spd);q.make();$("qr").innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}
