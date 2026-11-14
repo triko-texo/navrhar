@@ -40,16 +40,18 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">verze 60</div>
+  <h1>Návrhář potisku</h1><div class="mu">verze 61</div>
   <h2>Tričko</h2><select id="model" aria-label="Typ trička"></select>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
   <div class="row"><select id="font" aria-label="Písmo" style="flex:2"><option>Arial</option><option>Georgia</option><option>Impact</option><option>Courier New</option><option>Trebuchet MS</option></select><input type="color" id="tcol" value="#000000" aria-label="Barva textu" style="flex:1;height:36px"></div>
+  <div class="row" style="align-items:center;margin-top:6px"><label for="bend" class="mu" style="flex:0 0 auto">Oblouk</label><input type="range" id="bend" min="-100" max="100" step="5" value="0" style="flex:1;min-width:80px" aria-label="Zakřivení textu"><b id="bendv" style="font-size:12px">0</b></div>
   <button id="addTxt" style="width:100%">Přidat text</button><div class="mu" style="margin-top:4px">Jiné písmo? Nahrajte text jako obrázek.</div>
   <h2>Obrázek</h2>
-  <input type="file" id="file" class="sr" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,application/pdf,.pdf"><label for="file" class="filebtn">Nahrát obrázek</label>
+  <input type="file" id="file" class="sr" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,application/pdf,.pdf"><label for="file" class="filebtn">Nahrát obrázek</label><button id="rmbg" style="width:100%;margin-top:6px">Odstranit pozadí obrázku</button>
   <h2>Motivy</h2><button id="openM" style="width:100%">Vyhledat motiv</button>
+  <h2>Šablony</h2><select id="tpl" aria-label="Šablona"></select><button id="tplgo" style="width:100%">Použít šablonu</button>
   <div id="msg" role="status"></div>
  </section>
  <section class="card">
@@ -65,7 +67,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
   <p class="mu" id="sz" style="font-weight:600;margin:8px 0 4px"></p>
   <p class="mu" id="xmas" style="margin:4px 0"></p>
   <details class="mu" id="chart" hidden><summary style="cursor:pointer">Tabulka velikostí</summary><table id="chartb" style="border-collapse:collapse;margin:6px 0"></table><p style="margin:0">Měřeno na položeném tričku: šířka pod rukávy, délka od ramene u krku po spodní lem. Odchylka do 5 %.</p></details>
-  <details class="mu"><summary style="cursor:pointer">Jak na to a maximální velikosti</summary><p style="margin:6px 0 0">Pravítka a popisky ukazují velikost a polohu potisku v cm (růžové čáry ukazují vzdálenost od výstřihu, límce nebo ramene, od spodního lemu a od středu; u svislé i vodorovné osy se motiv sám přichytí). Největší velikost: <span id="limtxt"></span>. Na předku, zádech a štítku může být potisk na výšku, na šířku i šikmo; u rukávu platí šířka × výška. Potisk lze umístit kamkoli na dané straně a nejde zvětšit nad limit. Prvky blíž než 3 cm u sebe tvoří jeden potisk; prvky dál od sebe jsou samostatné potisky (každý za 100 Kč), proto může být na jedné straně třeba malé logo nahoře a nápis dole. Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem nebo posuvník Otočení ho natáčí o libovolný úhel, tlačítka Zrcadlit a Převrátit ho překlopí (limit se měří podle rozměru motivu, takže i A4 jde natočit šikmo).</p></details>
+  <details class="mu"><summary style="cursor:pointer">Jak na to a maximální velikosti</summary><p style="margin:6px 0 0">Pravítka a popisky ukazují velikost a polohu potisku v cm (růžové čáry ukazují vzdálenost od výstřihu, límce nebo ramene, od spodního lemu a od středu; u svislé i vodorovné osy se motiv sám přichytí). Největší velikost: <span id="limtxt"></span>. Na předku, zádech a štítku může být potisk na výšku, na šířku i šikmo; u rukávu platí šířka × výška. Potisk lze umístit kamkoli na dané straně a nejde zvětšit nad limit. Prvky blíž než 3 cm u sebe tvoří jeden potisk; prvky dál od sebe jsou samostatné potisky (každý za 100 Kč), proto může být na jedné straně třeba malé logo nahoře a nápis dole. Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem nebo posuvník Otočení ho natáčí o libovolný úhel, tlačítka Zrcadlit a Převrátit ho překlopí. Posuvník Oblouk zakřiví text (text do oblouku se pak upravuje v poli Text, ne přímo na tričku). Tlačítko Odstranit pozadí obrázku vymaže jednobarevné pozadí nahrané fotky (limit se měří podle rozměru motivu, takže i A4 jde natočit šikmo).</p></details>
  </section>
  <div class="bar card">
   <div class="bsz"><div class="sizes" id="sizes"></div><div class="mu" id="avail" style="font-size:12px;margin-top:4px"></div></div>
@@ -158,7 +160,7 @@ function drawShirt(){const sc=$("shirt"),g=sc.getContext("2d");g.clearRect(0,0,s
  [["tf","front"],["tb","back"],["tl","left"],["tr","right"],["tg","label"]].forEach(a=>$(a[0]).classList.toggle("on",side===a[1]));
 }
 const pobj={};let loading=false,loadTok=0;
-function saveSide(){if(loading)return;const j=cv.toJSON(["fname","pxk"]);pobj[side]=j.objects;data[side]=JSON.stringify(j)}
+function saveSide(){if(loading)return;const j=cv.toJSON(["fname","pxk","ctext","cfont","cfill","cbend"]);pobj[side]=j.objects;data[side]=JSON.stringify(j)}
 function loadSide(){const t=++loadTok;cv.clear();if(!data[side]){loading=false;price();return}loading=true;
  cv.loadFromJSON(data[side],()=>{if(t!==loadTok){loadSide();return}loading=false;cv.renderAll();price()})}
 function switchSide(s){if(s===side)return;saveSide();side=s;loadSide();drawShirt()}
@@ -270,9 +272,30 @@ function buildModelUI(){$("cols").innerHTML="";$("sizes").innerHTML="";
 function setModel(k,quiet){MODEL=MODELS[k];SIZES=MODEL.sizes;ci=0;color=MODEL.colors[0][2];REF.label.b=92+labelBox();CENTER.label=[240,92+labelBox()/2];loadImgs(MODEL);
  const G=MODEL.geo;["front","back","left"].forEach(k=>{REF[k].x=G[k].x;REF[k].y=G[k].y;REF[k].b=G[k].b;CENTER[k]=G[k].c});REF.right.x=480-G.left.x;REF.right.y=G.left.y;REF.right.b=G.left.b;CENTER.right=[480-G.left.c[0],G.left.c[1]];buildModelUI();if(!quiet){drawShirt();price();say("Vybráno: "+MODEL.name+". Zkontrolujte velikost potisku.")}}
 ["adult","kids","pesA","pes"].forEach(k=>$("model").add(new Option(MODELS[k].name,k)));$("model").onchange=()=>setModel($("model").value);setModel("adult",true);
-$("addTxt").onclick=()=>{const f=$("font").value;useFont(f,()=>add(new fabric.IText($("txt").value||"Váš text",{fontFamily:f,fill:$("tcol").value,fontSize:36})),$("txt").value)};
-$("tcol").oninput=()=>{const o=cv.getActiveObject();if(o&&o.type==="i-text"){o.set("fill",$("tcol").value);cv.requestRenderAll()}};
-$("font").onchange=()=>{const o=cv.getActiveObject(),f=$("font").value;if(o&&o.type==="i-text")useFont(f,()=>{o.set("fontFamily",f);o.initDimensions();o.setCoords();cv.requestRenderAll()})};
+// Text do oblouku: vykreslí se do obrázku (knihovna plátna zakřivený text neumí). Písmo, text a oblouk se uloží a posílají tiskaři.
+const CS=4;
+function curvedCanvas(text,font,fill,bend){const fs=36*CS,c=document.createElement("canvas"),g=c.getContext("2d"),F='bold '+fs+'px "'+font+'"';g.font=F;
+ const ch=[...text],ws=ch.map(x=>g.measureText(x).width),W=ws.reduce((a,b)=>a+b,0),h=fs;
+ if(!bend){c.width=Math.ceil(W)+16;c.height=Math.ceil(h*1.5);g.font=F;g.fillStyle=fill;g.textBaseline="alphabetic";g.fillText(text,8,h*1.1);return trim(c)}
+ const th=Math.abs(bend)/100*Math.PI,R=Math.max(W/th,h*1.2),up=bend>0,half=Math.min(th/2,Math.PI/2);
+ c.width=Math.ceil(2*(R+h)*Math.sin(half)+2*h);c.height=Math.ceil(R*(1-Math.cos(th/2))+2.2*h+8);
+ g.font=F;g.fillStyle=fill;g.textBaseline="alphabetic";const cx=c.width/2,cy=up?R+h+4:h+4-R*Math.cos(th/2);let acc=0;
+ ch.forEach((x,i)=>{const a=-th/2+(acc+ws[i]/2)/R;acc+=ws[i];g.save();g.translate(cx,cy);if(up){g.rotate(a);g.translate(0,-R)}else{g.rotate(-a);g.translate(0,R-h*0.75)}g.fillText(x,-ws[i]/2,up?0:h*0.75);g.restore()});
+ return trim(c)}
+function trim(c){const g=c.getContext("2d"),d=g.getImageData(0,0,c.width,c.height).data;let x0=c.width,y0=c.height,x1=0,y1=0;
+ for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++)if(d[(y*c.width+x)*4+3]>8){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+ if(x1<x0)return c;const o=document.createElement("canvas");o.width=x1-x0+1;o.height=y1-y0+1;o.getContext("2d").drawImage(c,x0,y0,o.width,o.height,0,0,o.width,o.height);return o}
+function makeCurved(text,font,fill,bend,cb){useFont(font,()=>{const c=curvedCanvas(text,font,fill,bend);fabric.Image.fromURL(c.toDataURL("image/png"),img=>{img.set({ctext:text,cfont:font,cfill:fill,cbend:bend});img.scale(1/CS);cb(img)})},text)}
+function rerenderCurved(o,ch){const t={text:o.ctext,font:o.cfont,fill:o.cfill,bend:o.cbend,...ch},dw=o.width*o.scaleX;
+ makeCurved(t.text,t.font,t.fill,t.bend,img=>{img.set({left:o.left,top:o.top,angle:o.angle,flipX:o.flipX,flipY:o.flipY,originX:"center",originY:"center"});img.scale(dw/img.width);const i=cv.getObjects().indexOf(o);cv.remove(o);cv.insertAt(img,i<0?cv.getObjects().length:i);cv.setActiveObject(img);cv.requestRenderAll();price()})}
+$("bend").oninput=()=>{$("bendv").textContent=$("bend").value;const o=cv.getActiveObject(),b=+$("bend").value;if(!o)return;
+ if(o.ctext!==undefined){clearTimeout(window._bt);window._bt=setTimeout(()=>rerenderCurved(o,{bend:b}),120)}
+ else if(o.type==="i-text"&&b!==0){const dw=o.width*o.scaleX;makeCurved(o.text,o.fontFamily,o.fill,b,img=>{img.set({left:o.left,top:o.top,angle:o.angle,originX:"center",originY:"center"});img.scale(dw/img.width);cv.remove(o);cv.add(img);cv.setActiveObject(img);cv.requestRenderAll();price()})}};
+$("txt").oninput=()=>{const o=cv.getActiveObject();if(o&&o.ctext!==undefined&&$("txt").value.trim()){clearTimeout(window._tt);window._tt=setTimeout(()=>rerenderCurved(o,{text:$("txt").value}),250)}};
+$("addTxt").onclick=()=>{const f=$("font").value,t=$("txt").value||"Váš text",b=+$("bend").value;
+ if(b)makeCurved(t,f,$("tcol").value,b,img=>add(img));else useFont(f,()=>add(new fabric.IText(t,{fontFamily:f,fill:$("tcol").value,fontSize:36})),t)};
+$("tcol").oninput=()=>{const o=cv.getActiveObject();if(o&&o.type==="i-text"){o.set("fill",$("tcol").value);cv.requestRenderAll()}else if(o&&o.ctext!==undefined){clearTimeout(window._ct);window._ct=setTimeout(()=>rerenderCurved(o,{fill:$("tcol").value}),150)}};
+$("font").onchange=()=>{const o=cv.getActiveObject(),f=$("font").value;if(o&&o.ctext!==undefined){rerenderCurved(o,{font:f});return}if(o&&o.type==="i-text")useFont(f,()=>{o.set("fontFamily",f);o.initDimensions();o.setCoords();cv.requestRenderAll()})};
 // PDF: knihovna pdf.js se načte až při prvním PDF, vykreslí 1. stránku jako náhled; do objednávky jde původní PDF.
 const PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";let pdfLoad=null;
 function loadPdfJs(){if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);if(!pdfLoad)pdfLoad=new Promise((ok,ko)=>{const sc=document.createElement("script");sc.src=PDFJS+"pdf.min.js";
@@ -297,6 +320,22 @@ $("file").onchange=e=>{let f=e.target.files[0];e.target.value="";if(!f)return;if
  f=uniq(f);say("Načítám obrázek…");previewURL(f).then(p=>fabric.Image.fromURL(p.url,img=>{if(!img||!img.width){say("Obrázek se nepodařilo načíst. Zkuste jiný soubor (PNG, JPG, PDF).");return}
   say("Obrázek nahrán ("+(p.W||img.width)+" × "+(p.H||img.height)+" px). Pod tričkem uvidíte, jestli je na zvolenou velikost dost ostrý.");
   img.scale(Math.min(160/img.width,160/img.height));img.fname=f.name;img.pxk=p.k;UPLOADS[f.name]=f;add(img)})).catch(()=>say("Obrázek se nepodařilo načíst. Zkuste jiný soubor (PNG, JPG, PDF)."))};
+// Odstranění jednobarevného pozadí: barva se vezme z rohů, pozadí se "vylije" od okrajů dovnitř, okraje se změkčí. Výsledek nahradí originál (nejvýš 3508 px).
+function removeBg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{try{const k=Math.min(1,3508/Math.max(im.naturalWidth,im.naturalHeight)),W=Math.round(im.naturalWidth*k),H=Math.round(im.naturalHeight*k),c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");g.drawImage(im,0,0,W,H);URL.revokeObjectURL(u);
+ const id=g.getImageData(0,0,W,H),d=id.data,n=W*H,seeds=[0,W-1,(H-1)*W,n-1,Math.floor(W/2),(H-1)*W+Math.floor(W/2),Math.floor(H/2)*W,Math.floor(H/2)*W+W-1];
+ let r=0,gg=0,b=0;seeds.forEach(i=>{r+=d[i*4];gg+=d[i*4+1];b+=d[i*4+2]});r/=seeds.length;gg/=seeds.length;b/=seeds.length;
+ const dist=i=>Math.abs(d[i*4]-r)+Math.abs(d[i*4+1]-gg)+Math.abs(d[i*4+2]-b),T=90,S=60,vis=new Uint8Array(n),q=new Int32Array(n);let qh=0,qt=0;
+ seeds.forEach(i=>{if(!vis[i]&&dist(i)<T+S){vis[i]=1;q[qt++]=i}});
+ while(qh<qt){const i=q[qh++],x=i%W,y=(i-x)/W;const nb=[x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1];for(const j of nb){if(j>=0&&!vis[j]){const dj=dist(j);if(dj<T+S){vis[j]=1;q[qt++]=j}}}}
+ let removed=0;for(let i=0;i<n;i++)if(vis[i]){const dd=dist(i);d[i*4+3]=dd<T?0:Math.round(255*(dd-T)/S);removed++}
+ if(removed<n*0.02){res(null);return}g.putImageData(id,0,0);c.toBlob(bl=>res(bl),"image/png")}catch(e){rej(e)}};im.onerror=()=>rej(new Error("img"));im.src=u})}
+$("rmbg").onclick=async()=>{const o=cv.getActiveObject();if(!o||o.type!=="image"||!o.fname||!UPLOADS[o.fname]){say("Nejdřív klikněte na nahraný obrázek, u kterého chcete odstranit pozadí.");return}
+ const f=UPLOADS[o.fname];if(/svg|pdf/.test(f.type)){say("U souborů SVG a PDF pozadí neodstraňujeme.");return}$("rmbg").disabled=true;say("Odstraňuji pozadí…");
+ try{const bl=await removeBg(f);if(!bl){say("Pozadí se nepodařilo rozpoznat. Funguje u obrázků s jednobarevným pozadím (např. bílý papír).");$("rmbg").disabled=false;return}
+  const nf=uniq(new File([bl],f.name.replace(/\.[^.]+$/,"")+"-bez-pozadi.png",{type:"image/png",lastModified:Date.now()})),p=await previewURL(nf),dw=o.width*o.scaleX;
+  fabric.Image.fromURL(p.url,img=>{img.set({left:o.left,top:o.top,angle:o.angle,flipX:o.flipX,flipY:o.flipY,originX:"center",originY:"center"});img.scale(dw/img.width);img.fname=nf.name;img.pxk=p.k;UPLOADS[nf.name]=nf;
+   const i=cv.getObjects().indexOf(o);cv.remove(o);cv.insertAt(img,i<0?cv.getObjects().length:i);cv.setActiveObject(img);cv.requestRenderAll();price();say("Pozadí odstraněno. Pokud výsledek nevyhovuje, prvek smažte a nahrajte obrázek znovu.");$("rmbg").disabled=false})}
+ catch(e){console.warn(e);say("Odstranění pozadí se nepodařilo.");$("rmbg").disabled=false}};
 function flip(ax){const o=cv.getActiveObject();if(!o){say("Nejdřív klikněte na prvek, který chcete převrátit.");return}o.set(ax,!o[ax]);o.setCoords();cv.requestRenderAll();price();say(ax==="flipX"?"Prvek je zrcadlově převrácený.":"Prvek je převrácený vzhůru nohama.")}
 $("flx").onclick=()=>flip("flipX");$("fly").onclick=()=>flip("flipY");
 $("del").onclick=()=>{cv.getActiveObjects().forEach(o=>cv.remove(o));cv.discardActiveObject();cv.requestRenderAll();price()};
@@ -344,6 +383,22 @@ function lookup(q){const n=norm(q);if(!n)return null;if(CZ_EN[n])return CZ_EN[n]
 function smart(q){q=(q||"").trim();if(!q){showCat("vanoce");return}const t=lookup(q);
  if(t&&t.startsWith("cat:")){showCat(t.slice(4));return}search(t||q)}
 Object.keys(CATS).forEach(k=>{const b=document.createElement("button");b.textContent=CATS[k][0];b.onclick=()=>{$("q").value=CATS[k][0];showCat(k)};$("chips").appendChild(b)});
+// Šablony: hotové kompozice textu a motivu; umístí se na aktuální stranu kolem jejího středu
+const TEMPLATES=[
+ {n:"Veselé Vánoce + stromeček",items:[{t:"text",text:"Veselé Vánoce",font:"Lobster",fill:"#c8102e",bend:35,y:-9,w:18},{t:"icon",id:"noto:christmas-tree",w:9,y:4}]},
+ {n:"Jméno + sob (doplňte jméno)",items:[{t:"text",text:"Jméno",font:"Fredoka",fill:"#1b2a4a",bend:0,y:-8,w:14},{t:"icon",id:"noto:deer",w:9,y:3}]},
+ {n:"Moje první Vánoce",items:[{t:"icon",id:"noto:snowman",w:8,y:-6},{t:"text",text:"Moje první Vánoce",font:"Caveat",fill:"#1f4fa3",bend:-25,y:5,w:17}]},
+ {n:"Šťastný nový rok 2027",items:[{t:"icon",id:"noto:fireworks",w:9,y:-7},{t:"text",text:"Šťastný nový rok 2027",font:"Oswald",fill:"#f28c00",bend:0,y:4,w:18}]},
+ {n:"Merry Christmas + Santa",items:[{t:"text",text:"Merry Christmas",font:"Pacifico",fill:"#2e8b3a",bend:30,y:-9,w:18},{t:"icon",id:"noto:santa-claus",w:9,y:4}]},
+ {n:"Rodinné Vánoce 2026",items:[{t:"icon",id:"noto:christmas-tree",w:6,y:-8},{t:"text",text:"Rodinné Vánoce 2026",font:"Playfair Display",fill:"#c8102e",bend:0,y:2,w:17}]}];
+TEMPLATES.forEach((t,i)=>$("tpl").add(new Option(t.n,i)));
+async function applyTemplate(ix){const T=TEMPLATES[ix];if(!T)return;const pc=pxOf(side),c=CENTER[side],sl=side==="left"||side==="right"||side==="label",k=sl?0.5:(side==="front"||side==="back")&&MODEL.bodyMax[0]<18?0.75:1;
+ say("Vkládám šablonu…");await loadIcons(T.items.filter(i=>i.t==="icon").map(i=>i.id));
+ for(const it of T.items){await new Promise(done=>{const place=img=>{const w=it.w*pc*k;img.set({originX:"center",originY:"center",left:c[0],top:c[1]+it.y*pc*k});img.scale(w/img.width);cv.add(img);done()};
+  if(it.t==="text")makeCurved(it.text,it.font,it.fill,it.bend,place);
+  else{const u=svgOf(it.id);if(!u){done();return}fabric.Image.fromURL(u,img=>{if(!img||!img.width){done();return}img.fname=iurl(it.id);place(img)},{crossOrigin:"anonymous"})}})}
+ cv.discardActiveObject();cv.requestRenderAll();price();say("Šablona vložena. Klikněte na text, upravte ho v poli Text a případně změňte písmo nebo barvu.")}
+$("tplgo").onclick=()=>applyTemplate(+$("tpl").value);
 $("openM").onclick=()=>{$("modal").hidden=false;if(!res.length){$("q").value="Vánoce";showCat("vanoce")}$("q").focus()};
 $("mx").onclick=()=>{$("modal").hidden=true};$("modal").onclick=e=>{if(e.target.id==="modal")$("modal").hidden=true};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("modal").hidden=true;$("omodal").hidden=true}});
@@ -356,7 +411,7 @@ const fmtD=d=>d.getDate()+". "+(d.getMonth()+1)+". "+d.getFullYear();
 function xmasText(){if(new Date()>new Date("2026-12-24T23:59:59"))return "Objednávky expedujeme do tří pracovních dnů.";return "Objednávky expedujeme do tří pracovních dnů. Doručení do Štědrého dne garantujeme pro objednávky uhrazené do "+fmtD(new Date(CFG.guarantee+"T12:00:00"))+"."}
 $("xmas").textContent=xmasText();$("xmas2").textContent=xmasText();$("omail").textContent=CFG.orderEmail;$("bulkmail").textContent=CFG.orderEmail;$("bulkmail").href="mailto:"+CFG.orderEmail;
 function sideObjs(sd){return objsOf(sd).map(o=>({o:o}))}
-function describeObj(o){if(o.type==="i-text"||o.type==="text")return "- text „"+o.text+"“, písmo "+o.fontFamily+", barva "+o.fill;const n=o.fname||"";return "- "+(UPLOADS[n]?"nahraný obrázek "+n:"motiv z knihovny "+(n||"(neznámý)"))}
+function describeObj(o){if(o.ctext!==undefined)return "- text do oblouku „"+o.ctext+"“, písmo "+o.cfont+", barva "+o.cfill+", oblouk "+o.cbend+" (−100 až 100; kladné = nahoru)";if(o.type==="i-text"||o.type==="text")return "- text „"+o.text+"“, písmo "+o.fontFamily+", barva "+o.fill;const n=o.fname||"";return "- "+(UPLOADS[n]?"nahraný obrázek "+n:"motiv z knihovny "+(n||"(neznámý)"))}
 function describe(sd){const G=groupsOf(sd);return G.map((F,ix)=>groupText(sd,F,ix,G.length)).join("\n")}
 function itemText(){const n=printZones().size,L=["Zboží: "+MODEL.name+", barva "+$("cname").textContent];
  [...document.querySelectorAll(".sizes input")].forEach((i,ix)=>{const c=cnt(i);if(c)L.push("Velikost "+SIZES[ix]+(MODEL.age?" ("+MODEL.age[SIZES[ix]]+")":"")+": "+c+" ks po "+(priceOf(SIZES[ix])+CFG.printPrice*n)+" Kč")});
@@ -370,7 +425,7 @@ function shrinkImg(file,budget){return new Promise(res=>{if(!/^image\/(jpeg|png|
   const tb=(t,q)=>new Promise(r=>c.toBlob(r,t,q));let b=file.type==="image/jpeg"?await tb("image/jpeg",0.92):await tb("image/png");
   if(b&&b.size>budget&&file.type!=="image/jpeg")b=await tb("image/webp",0.92);if(b&&b.size>budget)b=await tb(file.type==="image/jpeg"?"image/jpeg":"image/webp",0.8);res(b)}catch(e){res(null)}};
  im.onerror=()=>res(null);im.src=u})}
-function layerBlob(sd){return new Promise(res=>{try{if(!objsOf(sd).length){res(null);return}const json=sd===side&&!loading?JSON.stringify(cv.toJSON(["fname","pxk"])):data[sd];
+function layerBlob(sd){return new Promise(res=>{try{if(!objsOf(sd).length){res(null);return}const json=sd===side&&!loading?JSON.stringify(cv.toJSON(["fname","pxk","ctext","cfont","cfill","cbend"])):data[sd];
  const sc=new fabric.StaticCanvas(null,{width:960,height:1040});sc.setZoom(2);
  sc.loadFromJSON(json,()=>{try{sc.renderAll();sc.lowerCanvasEl.toBlob(b=>{sc.dispose();res(b)},"image/png")}catch(e){res(null)}})}catch(e){res(null)}})}
 function mockBlob(sd,layer){return new Promise(res=>{try{const c=document.createElement("canvas");c.width=960;c.height=1040;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,960,1040);paintShirt(x,sd,2);
@@ -473,6 +528,7 @@ function syncRot(){const o=cv.getActiveObject(),a=o?Math.round(((o.angle||0)%360
 $("rot").oninput=()=>{const o=cv.getActiveObject();if(!o)return;pokeGuides();o.rotate(+$("rot").value);if(!fits(side))shrinkToFit(o);o.setCoords();o._ok=keep(o);cv.requestRenderAll();$("rotv").textContent=$("rot").value+"°";updateSize()};
 $("rot").onchange=price;
 ["selection:created","selection:updated","selection:cleared"].forEach(ev=>cv.on(ev,syncRot));
+["selection:created","selection:updated"].forEach(ev=>cv.on(ev,()=>{const o=cv.getActiveObject();if(o&&o.ctext!==undefined){$("bend").value=o.cbend;$("bendv").textContent=o.cbend;$("txt").value=o.ctext;$("font").value=o.cfont;$("tcol").value=o.cfill}else if(o&&o.type==="i-text"){$("bend").value=0;$("bendv").textContent="0"}}));
 cv.on("object:rotating",e=>{const o=e.target;if(o&&!fits(side)){shrinkToFit(o);cv.requestRenderAll()}if(o)o._ok=keep(o);syncRot();updateSize()});
 cv.on("object:moving",e=>{const o=e.target,r=REF[side];if(!o)return;if(r.h&&Math.abs(o.left-r.x)<4){o.left=r.x;o.setCoords()}if(r.b){const ay=(r.y+r.b)/2;if(Math.abs(o.top-ay)<4){o.top=ay;o.setCoords()}}});
 ["object:moving","object:scaling","object:rotating"].forEach(ev=>cv.on(ev,pokeGuides));
