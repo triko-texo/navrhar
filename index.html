@@ -15,7 +15,7 @@ h1{font-size:20px;margin:0 0 2px}h2{font-size:13px;margin:8px 0 4px;color:var(--
 .app>section:nth-child(2){padding:10px}
 .bar{grid-column:1/-1;position:sticky;bottom:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 14px;box-shadow:0 -4px 14px rgba(0,0,0,.14)}.bar .sizes{grid-template-columns:repeat(7,40px);gap:4px}.bar .sizes label{font-size:11px}.bar .sizes input{padding:4px 2px}.bar .price{font-size:20px;line-height:1.2}.bar .bpr{flex:1 1 110px}.bar .bact{flex:0 0 150px}
 
-@media(min-width:1000px){.app{grid-template-columns:240px minmax(0,1fr) 240px;grid-template-rows:auto 1fr;max-width:1600px;align-items:stretch}.app>section:nth-child(1){grid-column:1;grid-row:1}.bar{grid-column:1;grid-row:2;position:static;flex-direction:column;flex-wrap:nowrap;align-items:stretch;box-shadow:none}#cartbox{flex:0 0 auto}.app>section:nth-child(2){grid-column:2;grid-row:1/3}#tools2{grid-column:3;grid-row:1/3;align-self:stretch}.bar .bsz,.bar .bpr,.bar .bact{flex:0 0 auto;width:100%}.bar .sizes{grid-template-columns:repeat(4,1fr)}.bar .price{font-size:24px}}
+@media(min-width:1000px){.app{grid-template-columns:240px minmax(0,1fr) 240px;grid-template-rows:auto 1fr;max-width:1600px;align-items:stretch}.app>section:nth-child(1){grid-column:1;grid-row:1}.bar{grid-column:1;grid-row:2;position:static;flex-direction:column;flex-wrap:nowrap;align-items:stretch;box-shadow:none}#cartmini{flex:0 0 auto}.app>section:nth-child(2){grid-column:2;grid-row:1/3}#tools2{grid-column:3;grid-row:1/3;align-self:stretch}.bar .bsz,.bar .bpr,.bar .bact{flex:0 0 auto;width:100%}.bar .sizes{grid-template-columns:repeat(4,1fr)}.bar .price{font-size:24px}}
 @media(min-width:640px) and (max-width:999px){.app{padding-bottom:0}}
 @media(max-width:639px){.app{grid-template-columns:1fr}.app>section:nth-child(1),.app>section:nth-child(2),#tools2,.bar{grid-column:1;grid-row:auto}.app>section:nth-child(2){padding:14px}.bar{position:static}.bar .bsz{flex:1 1 100%}.bar .sizes{grid-template-columns:repeat(4,1fr)}.bar .bact{flex:1 1 100%}}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px}
@@ -28,12 +28,12 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 .sr{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}.filebtn{display:block;text-align:center;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;cursor:pointer;background:var(--card)}.filebtn:hover{border-color:var(--ac)}#file:focus-visible+.filebtn{outline:2px solid var(--ac);outline-offset:2px}.row>.sw{flex:0 0 26px}.sw{width:26px;height:26px;border-radius:50%;padding:0;border:2px solid var(--bd)}.sw.on{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.tabs button.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
 .wrap{overflow:hidden}#stage{position:relative;width:480px;height:520px;margin:0 auto;transform-origin:0 0}
-#shirt{position:absolute;inset:0}#meas{position:absolute;inset:0;width:480px;height:520px;pointer-events:none;overflow:visible}#meas .rl{fill:rgba(255,255,255,.82)}#meas .tk{stroke:#5b6470;stroke-width:1}#meas .tn{fill:#5b6470;font:9px sans-serif}#meas .sel{fill:var(--ac);opacity:.35}#meas .bx{fill:none;stroke:var(--ac);stroke-width:1.2;stroke-dasharray:4 3}#meas .bx.bad{stroke:#c0392b}#meas .dl{stroke:var(--ac);stroke-width:1}#meas .pt{fill:#fff;font:600 11px sans-serif}#meas .gw{stroke:rgba(255,255,255,.85);stroke-width:3}#meas .gd{stroke:#e0338a;stroke-width:1.3;stroke-dasharray:5 3}#meas .gc{stroke:#e0338a;stroke-width:1.3}#meas .gf{stroke:#e0338a;stroke-width:1;opacity:.35}#meas .bw{fill:none;stroke:rgba(255,255,255,.9);stroke-width:3}#meas .dt{fill:#1d2228;font:600 11px sans-serif;stroke:#fff;stroke-width:3px;paint-order:stroke}#meas .dt.bad{fill:#c0392b}#cv-box{position:absolute;inset:0}#cartlist{max-height:170px;overflow:auto}.ci{display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid var(--bd);font-size:12px;line-height:1.3}.ci img{width:40px;height:44px;object-fit:cover;border-radius:4px;border:1px solid var(--bd);background:#fff}.ci div{flex:1;min-width:0}.ci button{padding:2px 8px;font-size:12px}#chartb th,#chartb td{border:1px solid var(--bd);padding:3px 8px;text-align:center;font-weight:400}#chartb th{font-weight:600}.sizes small{font-size:10px}
+#shirt{position:absolute;inset:0}#meas{position:absolute;inset:0;width:480px;height:520px;pointer-events:none;overflow:visible}#meas .rl{fill:rgba(255,255,255,.82)}#meas .tk{stroke:#5b6470;stroke-width:1}#meas .tn{fill:#5b6470;font:9px sans-serif}#meas .sel{fill:var(--ac);opacity:.35}#meas .bx{fill:none;stroke:var(--ac);stroke-width:1.2;stroke-dasharray:4 3}#meas .bx.bad{stroke:#c0392b}#meas .dl{stroke:var(--ac);stroke-width:1}#meas .pt{fill:#fff;font:600 11px sans-serif}#meas .gw{stroke:rgba(255,255,255,.85);stroke-width:3}#meas .gd{stroke:#e0338a;stroke-width:1.3;stroke-dasharray:5 3}#meas .gc{stroke:#e0338a;stroke-width:1.3}#meas .gf{stroke:#e0338a;stroke-width:1;opacity:.35}#meas .bw{fill:none;stroke:rgba(255,255,255,.9);stroke-width:3}#meas .dt{fill:#1d2228;font:600 11px sans-serif;stroke:#fff;stroke-width:3px;paint-order:stroke}#meas .dt.bad{fill:#c0392b}#cv-box{position:absolute;inset:0}#cartlist{max-height:50vh;overflow:auto}.ci{display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid var(--bd);font-size:12px;line-height:1.3}.ci img{width:40px;height:44px;object-fit:cover;border-radius:4px;border:1px solid var(--bd);background:#fff}.ci div{flex:1;min-width:0}.ci button{padding:2px 8px;font-size:12px}#chartb th,#chartb td{border:1px solid var(--bd);padding:3px 8px;text-align:center;font-weight:400}#chartb th{font-weight:600}.sizes small{font-size:10px}
 .zone{position:absolute;border:1.5px dashed var(--ac);border-radius:4px;pointer-events:none;font-size:11px;color:var(--ac);padding:1px 3px;box-sizing:border-box}
 .sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.sizes label{font-size:12px;color:var(--mu);text-align:center}
 .sizes input{width:100%;box-sizing:border-box;padding:5px;text-align:center;border:1px solid var(--bd);border-radius:6px;background:var(--card)}
 .price{font-size:28px;font-weight:700}.mu{color:var(--mu);font-size:13px}#msg{min-height:20px;font-size:13px;margin-top:8px;color:var(--ac)}
-#modal,#omodal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:10px}#modal[hidden],#omodal[hidden]{display:none}#ofrm label.mu{display:block;margin:6px 0 2px}#ofrm input[type=text],#ofrm input[type=email],#ofrm input[type=tel],#ofrm select,#ofrm textarea{width:100%;box-sizing:border-box;padding:7px;border:1px solid var(--bd);border-radius:8px;background:var(--card);font:inherit;color:var(--tx)}#ofrm label.chk{display:flex;gap:8px;align-items:flex-start;margin:10px 0}#ofrm label.chk input{margin-top:3px}#oerr{color:#c0392b;min-height:20px;font-size:13px;margin:6px 0}
+#modal,#omodal,#cmodal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:10px}#modal[hidden],#omodal[hidden],#cmodal[hidden]{display:none}#ofrm label.mu{display:block;margin:6px 0 2px}#ofrm input[type=text],#ofrm input[type=email],#ofrm input[type=tel],#ofrm select,#ofrm textarea{width:100%;box-sizing:border-box;padding:7px;border:1px solid var(--bd);border-radius:8px;background:var(--card);font:inherit;color:var(--tx)}#ofrm label.chk{display:flex;gap:8px;align-items:flex-start;margin:10px 0}#ofrm label.chk input{margin-top:3px}#oerr{color:#c0392b;min-height:20px;font-size:13px;margin:6px 0}
 .mbox{background:var(--card);border:1px solid var(--bd);border-radius:12px;width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:14px}
 .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chips button{padding:3px 10px;border-radius:99px;font-size:13px}
@@ -41,7 +41,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">verze 65</div>
+  <h1>Návrhář potisku</h1><div class="mu">verze 66</div>
   <h2>Tričko</h2><select id="model" aria-label="Typ trička"></select>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <div id="msg" role="status"></div>
@@ -71,14 +71,13 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
   <input type="file" id="file" class="sr" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,application/pdf,.pdf"><label for="file" class="filebtn">Nahrát obrázek</label><button id="rmbg" style="width:100%;margin-top:6px;padding:5px 10px;font-size:13px">Odstranit pozadí obrázku</button>
   <h2>Úprava vybraného prvku</h2><div class="row"><button id="flx" title="Zrcadlově převrátit vybraný prvek zleva doprava">Zrcadlit ⇆</button><button id="fly" title="Převrátit vybraný prvek vzhůru nohama">Převrátit ⇅</button></div>
   <h2>Motivy</h2><button id="openM" style="width:100%">Vyhledat motiv</button>
-  <h2>Šablony</h2><select id="tpl" aria-label="Šablona"></select><button id="tplgo" style="width:100%">Použít šablonu</button>
   <div id="msg2" class="mu" role="status" style="min-height:0;margin-top:6px;color:var(--ac)"></div>
  </section>
  <div class="bar card">
   <div class="bsz"><div class="sizes" id="sizes"></div><div class="mu" id="avail" style="font-size:12px;margin-top:4px"></div></div>
   <div class="bpr"><div class="mu">Za kus: <b id="unit">–</b> <span id="info"></span></div><div class="price" id="total">–</div><label class="mu"><input type="checkbox" id="gfx"> Grafická úprava a kontrola (+349 Kč)</label><div class="mu" id="bulk" hidden style="color:var(--tx);font-weight:600;margin-top:6px">Chcete potisknout 10 a více triček stejným motivem? Napište nám na <a id="bulkmail" href="#"></a>, rádi vám připravíme výhodnější nabídku.</div></div>
   <div class="bact"><button class="main" id="cart">Přidat do košíku</button><p id="cartmsg" role="alert" style="color:#c0392b;font-size:13px;margin:6px 0 0"></p></div>
-  <div id="cartbox" hidden style="flex:1 1 100%;width:100%;border-top:1px solid var(--bd);padding-top:8px"><h2 style="margin-top:0" id="carth">Košík</h2><div id="cartlist"></div><div id="cartsum" style="font-weight:700;margin:6px 0"></div><div class="mu" style="font-size:12px;margin:0 0 8px">Doprava se počítá jednou za celou objednávku.</div><button id="more1" style="width:100%;margin-bottom:6px">Navrhnout další tričko</button><button class="main" id="order">Dokončit objednávku a zaplatit</button></div>
+  <div id="cartmini" hidden style="flex:1 1 100%;width:100%;border-top:1px solid var(--bd);padding-top:8px;font-size:13px"><b id="cartminitxt"></b><button id="cartopen" style="width:100%;margin-top:6px">Zobrazit košík a objednat</button></div>
  </div>
 </div>
 <div id="modal" hidden><div class="mbox" role="dialog" aria-label="Motivy">
@@ -88,6 +87,11 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
  <div class="chips" id="chips"></div>
  <div id="symcol" class="mu" hidden>Barva symbolu: <input type="color" id="scol" value="#000000" aria-label="Barva symbolu"></div>
  <div id="grid"></div><div class="row"><button id="more" hidden>Zobrazit další</button></div><div class="mu" id="mmsg" role="status"></div>
+</div></div>
+<div id="cmodal" hidden><div class="mbox" role="dialog" aria-label="Košík" style="max-width:520px">
+ <div class="mhead"><b id="carth">Košík</b><button id="cx" aria-label="Zavřít">Zavřít</button></div>
+ <div id="cartlist"></div><div id="cartsum" style="font-weight:700;margin:8px 0"></div><div class="mu" style="font-size:12px;margin:0 0 10px">Doprava se počítá jednou za celou objednávku.</div>
+ <div class="row"><button id="more1" style="flex:1 1 45%">Navrhnout další tričko</button><button class="main" id="order" style="flex:1 1 45%;width:auto">Dokončit objednávku a zaplatit</button></div>
 </div></div>
 <div id="omodal" hidden><div class="mbox" role="dialog" aria-label="Objednávka">
  <div class="mhead"><b id="otitle">Dokončit objednávku</b><button id="ox" aria-label="Zavřít">Zavřít</button></div>
@@ -348,7 +352,8 @@ document.addEventListener("keydown",e=>{const t=document.activeElement.tagName,o
 $("tf").onclick=()=>switchSide("front");$("tb").onclick=()=>switchSide("back");$("tl").onclick=()=>switchSide("left");$("tr").onclick=()=>switchSide("right");$("tg").onclick=()=>switchSide("label");
 $("dl").onclick=()=>{cv.discardActiveObject();cv.renderAll();const a=document.createElement("a");a.href=cv.toDataURL({format:"png",multiplier:3});a.download="potisk-"+SIDEFILE[side]+".png";a.click();say("Staženo. Každou stranu stáhněte zvlášť.")};
 $("cart").onclick=addToCart;$("order").onclick=openOrder;
-$("more1").onclick=()=>{SIDES.forEach(sd=>{data[sd]=null;pobj[sd]=[]});cv.clear();document.querySelectorAll(".sizes input").forEach((i,ix)=>i.value=SIZES[ix]===MODEL.def&&!i.disabled?1:0);applyAvail();drawShirt();price();say("Předchozí návrh je uložený v košíku. Vyberte tričko a barvu a navrhněte další.");$("model").focus()};
+$("cartopen").onclick=()=>{if(CART.length)$("cmodal").hidden=false};$("cx").onclick=()=>{$("cmodal").hidden=true};$("cmodal").onclick=e=>{if(e.target.id==="cmodal")$("cmodal").hidden=true};
+$("more1").onclick=()=>{$("cmodal").hidden=true;SIDES.forEach(sd=>{data[sd]=null;pobj[sd]=[]});cv.clear();document.querySelectorAll(".sizes input").forEach((i,ix)=>i.value=SIZES[ix]===MODEL.def&&!i.disabled?1:0);applyAvail();drawShirt();price();say("Předchozí návrh je uložený v košíku. Vyberte tričko a barvu a navrhněte další.");$("model").focus()};
 // ===== Písma (Google Fonts, podpora češtiny ověřte vzorkem textu) =====
 const FONTS=["Arial","Georgia","Impact","Courier New","Roboto","Open Sans","Montserrat","Oswald","Anton","Archivo Black","Playfair Display","Lobster","Pacifico","Dancing Script","Caveat","Amatic SC","Bangers","Fredoka","Righteous","Russo One","Lilita One","Courgette","Press Start 2P"];
 $("font").innerHTML="";FONTS.forEach(f=>{const o=document.createElement("option");o.textContent=f;o.style.fontFamily=f;$("font").appendChild(o)});
@@ -389,25 +394,9 @@ function lookup(q){const n=norm(q);if(!n)return null;if(CZ_EN[n])return CZ_EN[n]
 function smart(q){q=(q||"").trim();if(!q){showCat("vanoce");return}const t=lookup(q);
  if(t&&t.startsWith("cat:")){showCat(t.slice(4));return}search(t||q)}
 Object.keys(CATS).forEach(k=>{const b=document.createElement("button");b.textContent=CATS[k][0];b.onclick=()=>{$("q").value=CATS[k][0];showCat(k)};$("chips").appendChild(b)});
-// Šablony: hotové kompozice textu a motivu; umístí se na aktuální stranu kolem jejího středu
-const TEMPLATES=[
- {n:"Veselé Vánoce + stromeček",items:[{t:"text",text:"Veselé Vánoce",font:"Lobster",fill:"#c8102e",bend:35,y:-9,w:18},{t:"icon",id:"noto:christmas-tree",w:9,y:4}]},
- {n:"Jméno + sob (doplňte jméno)",items:[{t:"text",text:"Jméno",font:"Fredoka",fill:"#1b2a4a",bend:0,y:-8,w:14},{t:"icon",id:"noto:deer",w:9,y:3}]},
- {n:"Moje první Vánoce",items:[{t:"icon",id:"noto:snowman",w:8,y:-6},{t:"text",text:"Moje první Vánoce",font:"Caveat",fill:"#1f4fa3",bend:-25,y:5,w:17}]},
- {n:"Šťastný nový rok 2027",items:[{t:"icon",id:"noto:fireworks",w:9,y:-7},{t:"text",text:"Šťastný nový rok 2027",font:"Oswald",fill:"#f28c00",bend:0,y:4,w:18}]},
- {n:"Merry Christmas + Santa",items:[{t:"text",text:"Merry Christmas",font:"Pacifico",fill:"#2e8b3a",bend:30,y:-9,w:18},{t:"icon",id:"noto:santa-claus",w:9,y:4}]},
- {n:"Rodinné Vánoce 2026",items:[{t:"icon",id:"noto:christmas-tree",w:6,y:-8},{t:"text",text:"Rodinné Vánoce 2026",font:"Playfair Display",fill:"#c8102e",bend:0,y:2,w:17}]}];
-TEMPLATES.forEach((t,i)=>$("tpl").add(new Option(t.n,i)));
-async function applyTemplate(ix){const T=TEMPLATES[ix];if(!T)return;const pc=pxOf(side),c=CENTER[side],sl=side==="left"||side==="right"||side==="label",k=sl?0.5:(side==="front"||side==="back")&&MODEL.bodyMax[0]<18?0.75:1;
- say("Vkládám šablonu…");await loadIcons(T.items.filter(i=>i.t==="icon").map(i=>i.id));
- for(const it of T.items){await new Promise(done=>{const place=img=>{const w=it.w*pc*k;img.set({originX:"center",originY:"center",left:c[0],top:c[1]+it.y*pc*k});img.scale(w/img.width);cv.add(img);done()};
-  if(it.t==="text")makeCurved(it.text,it.font,it.fill,it.bend,place);
-  else{const u=svgOf(it.id);if(!u){done();return}fabric.Image.fromURL(u,img=>{if(!img||!img.width){done();return}img.fname=iurl(it.id);place(img)},{crossOrigin:"anonymous"})}})}
- cv.discardActiveObject();cv.requestRenderAll();price();say("Šablona vložena. Klikněte na text, upravte ho v poli Text a případně změňte písmo nebo barvu.")}
-$("tplgo").onclick=()=>applyTemplate(+$("tpl").value);
 $("openM").onclick=()=>{$("modal").hidden=false;if(!res.length){$("q").value="Vánoce";showCat("vanoce")}$("q").focus()};
 $("mx").onclick=()=>{$("modal").hidden=true};$("modal").onclick=e=>{if(e.target.id==="modal")$("modal").hidden=true};
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("modal").hidden=true;$("omodal").hidden=true}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("modal").hidden=true;$("omodal").hidden=true;$("cmodal").hidden=true}});
 $("qgo").onclick=()=>smart($("q").value);$("q").onkeydown=e=>{if(e.key==="Enter")$("qgo").click()};
 $("more").onclick=render;$("tEmo").onclick=()=>setMode("emo");$("tSym").onclick=()=>setMode("sym");
 $("scol").oninput=()=>{rtok++;$("grid").innerHTML="";shown=0;render()};
@@ -441,10 +430,10 @@ const CART=[];let FROZEN=null;
 const cartSum=()=>CART.reduce((a,i)=>a+i.sum,0);
 function shipCost(){return CFG.ship[document.querySelector('input[name=fm]:checked').value]}
 function orderTotal(){return FROZEN!==null?FROZEN:cartSum()+shipCost()}
-function renderCart(){$("cartbox").hidden=!CART.length;$("cartlist").innerHTML="";
+function renderCart(){$("cartmini").hidden=!CART.length;$("cartminitxt").textContent="V košíku: "+CART.length+" "+(CART.length===1?"položka":CART.length<5?"položky":"položek")+" · "+cartSum()+" Kč";$("cartlist").innerHTML="";
  CART.forEach((it,ix)=>{const r=document.createElement("div");r.className="ci";const im=document.createElement("img");im.alt="";if(it.thumb)im.src=it.thumb;const d=document.createElement("div");
   const b=document.createElement("b");b.textContent=it.title;const sp=document.createElement("span");sp.textContent=it.sizes+" · "+it.sum+" Kč";d.append(b,document.createElement("br"),sp);
-  const x=document.createElement("button");x.textContent="Odebrat";x.setAttribute("aria-label","Odebrat položku "+(ix+1));x.onclick=()=>{CART.splice(ix,1);renderCart()};r.append(im,d,x);$("cartlist").appendChild(r)});
+  const x=document.createElement("button");x.textContent="Odebrat";x.setAttribute("aria-label","Odebrat položku "+(ix+1));x.onclick=()=>{CART.splice(ix,1);renderCart();if(!CART.length)$("cmodal").hidden=true};r.append(im,d,x);$("cartlist").appendChild(r)});
  $("cartsum").textContent="Zboží celkem: "+cartSum()+" Kč";$("carth").textContent="Košík ("+CART.length+" "+(CART.length===1?"položka":CART.length<5?"položky":"položek")+")"}
 function refreshOrder(){const m=document.querySelector('input[name=fm]:checked').value;
  $("onotice").textContent="Po odeslání zaplatíte QR kódem nebo převodem. Objednávku zpracujeme po přijetí platby a kontrole návrhu, potvrzení vám pošleme e-mailem.";
@@ -468,10 +457,10 @@ async function addToCart(){if(adding)return;$("cartmsg").textContent="";const q=
   const used=new Set();SIDES.flatMap(sd=>objsOf(sd)).forEach(o=>{if(o.fname&&UPLOADS[o.fname])used.add(o.fname)});
   const sizes=[...document.querySelectorAll(".sizes input")].map((i,ix)=>cnt(i)?SIZES[ix]+" × "+cnt(i):"").filter(Boolean).join(", ");
   CART.push({title:MODEL.name+", "+$("cname").textContent,sizes:sizes,sum:SUM,text:itemText(),mocks:mocks,layers:layers,orig:[...used].map(n=>UPLOADS[n]),thumb:mocks[0]?URL.createObjectURL(mocks[0][1]):""});
-  renderCart();setTimeout(()=>$("cartbox").scrollIntoView({behavior:"smooth",block:"nearest"}),50);say("Přidáno do košíku. Dole vlevo můžete navrhnout další tričko, nebo objednávku dokončit.")}
+  renderCart();$("cmodal").hidden=false;say("Přidáno do košíku.")}
  catch(e){console.warn(e);block("Položku se nepodařilo přidat. Zkuste to prosím znovu.")}
  adding=false;$("cart").disabled=false;price()}
-function openOrder(){if(!CART.length){say("Košík je prázdný.");return}FROZEN=null;
+function openOrder(){if(!CART.length){say("Košík je prázdný.");return}$("cmodal").hidden=true;FROZEN=null;
  $("otitle").textContent="Dokončit objednávku";$("osend").textContent="Odeslat objednávku";refreshOrder();$("oerr").textContent="";$("oform").hidden=false;$("odone").hidden=true;$("omodal").hidden=false;$("fn").focus()}
 // Spolehlivá cesta: soubory se nahrají do úložiště Cloudinary (bez společného limitu), e-mail jde přes FormSubmit AJAX s potvrzením doručení.
 async function upOne(name,blob,ref){const fd=new FormData();fd.append("file",blob instanceof File?blob:new File([blob],name,{type:blob.type||"image/png"}));fd.append("upload_preset",CFG.preset);fd.append("tags",ref);
