@@ -15,7 +15,7 @@ h1{font-size:20px;margin:0 0 2px}h2{font-size:13px;margin:8px 0 4px;color:var(--
 .app>section:nth-child(2){padding:10px}
 .bar{grid-column:1/-1;position:sticky;bottom:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 14px;box-shadow:0 -4px 14px rgba(0,0,0,.14)}.bar .sizes{grid-template-columns:repeat(7,40px);gap:4px}.bar .sizes label{font-size:11px}.bar .sizes input{padding:4px 2px}.bar .price{font-size:20px;line-height:1.2}.bar .bpr{flex:1 1 110px}.bar .bact{flex:0 0 150px}
 
-@media(min-width:1000px){.app{grid-template-columns:240px minmax(0,1fr) 240px;max-width:1600px;align-items:start}.app>section:nth-child(1){grid-column:1;grid-row:1;align-self:stretch}.bar{grid-column:1;grid-row:2;position:static;flex-direction:column;align-items:stretch;box-shadow:none}.app>section:nth-child(2){grid-column:2;grid-row:1/3}#tools2{grid-column:3;grid-row:1/3}.bar .bsz,.bar .bpr,.bar .bact{flex:0 0 auto;width:100%}.bar .sizes{grid-template-columns:repeat(4,1fr)}.bar .price{font-size:24px}}
+@media(min-width:1000px){.app{grid-template-columns:240px minmax(0,1fr) 240px;grid-template-rows:auto 1fr;max-width:1600px;align-items:stretch}.app>section:nth-child(1){grid-column:1;grid-row:1}.bar{grid-column:1;grid-row:2;position:static;flex-direction:column;align-items:stretch;box-shadow:none}.app>section:nth-child(2){grid-column:2;grid-row:1/3}#tools2{grid-column:3;grid-row:1/3;align-self:stretch}.bar .bsz,.bar .bpr,.bar .bact{flex:0 0 auto;width:100%}.bar .sizes{grid-template-columns:repeat(4,1fr)}.bar .price{font-size:24px}}
 @media(min-width:640px) and (max-width:999px){.app{padding-bottom:0}}
 @media(max-width:639px){.app{grid-template-columns:1fr}.app>section:nth-child(1),.app>section:nth-child(2),#tools2,.bar{grid-column:1;grid-row:auto}.app>section:nth-child(2){padding:14px}.bar{position:static}.bar .bsz{flex:1 1 100%}.bar .sizes{grid-template-columns:repeat(4,1fr)}.bar .bact{flex:1 1 100%}}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px}
@@ -41,7 +41,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">verze 63</div>
+  <h1>Návrhář potisku</h1><div class="mu">verze 64</div>
   <h2>Tričko</h2><select id="model" aria-label="Typ trička"></select>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <div id="msg" role="status"></div>
@@ -55,7 +55,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
    <svg id="meas" viewBox="0 0 480 520" aria-hidden="true"></svg>
   </div></div>
   <div class="row" style="margin-top:8px;align-items:center"><label for="rot" class="mu">Otočení vybraného prvku</label><input type="range" id="rot" min="0" max="359" step="1" value="0" style="flex:1;min-width:120px"><b id="rotv">0°</b></div>
-  <div class="row" style="margin-top:8px"><button id="flx" title="Zrcadlově převrátit vybraný prvek zleva doprava">Zrcadlit ⇆</button><button id="fly" title="Převrátit vybraný prvek vzhůru nohama">Převrátit ⇅</button><button id="dl">Stáhnout potisk (PNG)</button><button id="del">Smazat prvek</button></div>
+  <div class="row" style="margin-top:8px"><button id="dl">Stáhnout potisk (PNG)</button><button id="del">Smazat prvek</button></div>
   <p class="mu" id="sz" style="font-weight:600;margin:8px 0 4px"></p>
   <p class="mu" id="xmas" style="margin:4px 0"></p>
   <details class="mu" id="chart" hidden><summary style="cursor:pointer">Tabulka velikostí</summary><table id="chartb" style="border-collapse:collapse;margin:6px 0"></table><p style="margin:0">Měřeno na položeném tričku: šířka pod rukávy, délka od ramene u krku po spodní lem. Odchylka do 5 %.</p></details>
@@ -69,6 +69,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
   <button id="addTxt" style="width:100%">Přidat text</button><div class="mu" style="margin-top:4px">Jiné písmo? Nahrajte text jako obrázek.</div>
   <h2>Obrázek</h2>
   <input type="file" id="file" class="sr" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,application/pdf,.pdf"><label for="file" class="filebtn">Nahrát obrázek</label><button id="rmbg" style="width:100%;margin-top:6px;padding:5px 10px;font-size:13px">Odstranit pozadí obrázku</button>
+  <h2>Úprava vybraného prvku</h2><div class="row"><button id="flx" title="Zrcadlově převrátit vybraný prvek zleva doprava">Zrcadlit ⇆</button><button id="fly" title="Převrátit vybraný prvek vzhůru nohama">Převrátit ⇅</button></div>
   <h2>Motivy</h2><button id="openM" style="width:100%">Vyhledat motiv</button>
   <h2>Šablony</h2><select id="tpl" aria-label="Šablona"></select><button id="tplgo" style="width:100%">Použít šablonu</button>
   <div id="msg2" class="mu" role="status" style="min-height:0;margin-top:6px;color:var(--ac)"></div>
@@ -540,6 +541,9 @@ cv.on("object:moving",e=>{const o=e.target,r=REF[side];if(!o)return;if(r.h&&Math
  if(o._wasOk&&o._ok&&!fits(side)){o.set(o._ok);o.setCoords();cv.requestRenderAll()}else if(o._ok&&fits(side))o._ok=keep(o);updateSize()}));
 cv.on("text:changed",updateSize);drawShirt();price();
 // Zmenší náhled trička, aby se vešel do úzkého okna (telefon, úzký sloupec e-shopu)
-function fit(){const w=$("sw").clientWidth,wide=matchMedia("(min-width:640px)").matches;let k=Math.min(1,w/480);if(wide)k=Math.min(k,Math.max(.5,(innerHeight-(matchMedia("(min-width:1000px)").matches?248:370))/520));$("stage").style.transformOrigin=w<480?"0 0":"50% 0";$("stage").style.transform=k<1?"scale("+k+")":"none";$("sw").style.height=(520*k)+"px";cv.calcOffset()}
+function fit(){const w=$("sw").clientWidth,wide=matchMedia("(min-width:640px)").matches,w3=matchMedia("(min-width:1000px)").matches;let k=Math.min(1,w/480);
+ if(wide){let kh=Math.max(.5,(innerHeight-(w3?248:370))/520);
+  if(w3){const A=document.querySelector(".app"),S=A.children,gap=12,side=Math.max(S[0].offsetHeight+gap+$("sizes").closest(".bar").offsetHeight,$("tools2").offsetHeight),sec=S[1];let other=28;[...sec.children].forEach(ch=>{if(ch.id!=="sw")other+=ch.offsetHeight+8});
+   kh=Math.max(kh,(side-other)/520)}k=Math.min(k,kh)}$("stage").style.transformOrigin=w<480?"0 0":"50% 0";$("stage").style.transform=k<1?"scale("+k+")":"none";$("sw").style.height=(520*k)+"px";cv.calcOffset()}
 if(window.ResizeObserver)new ResizeObserver(fit).observe($("sw"));window.addEventListener("resize",fit);fit();
 </script></body></html>
