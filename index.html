@@ -40,7 +40,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">verze 58</div>
+  <h1>Návrhář potisku</h1><div class="mu">verze 59</div>
   <h2>Tričko</h2><select id="model" aria-label="Typ trička"></select>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
@@ -65,7 +65,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
   <p class="mu" id="sz" style="font-weight:600;margin:8px 0 4px"></p>
   <p class="mu" id="xmas" style="margin:4px 0"></p>
   <details class="mu" id="chart" hidden><summary style="cursor:pointer">Tabulka velikostí</summary><table id="chartb" style="border-collapse:collapse;margin:6px 0"></table><p style="margin:0">Měřeno na položeném tričku: šířka pod rukávy, délka od ramene u krku po spodní lem. Odchylka do 5 %.</p></details>
-  <details class="mu"><summary style="cursor:pointer">Jak na to a maximální velikosti</summary><p style="margin:6px 0 0">Pravítka a popisky ukazují velikost a polohu potisku v cm (růžové čáry ukazují vzdálenost od výstřihu, límce nebo ramene, od spodního lemu a od středu; u svislé i vodorovné osy se motiv sám přichytí). Největší velikost: <span id="limtxt"></span>. Na předku, zádech a štítku může být potisk na výšku, na šířku i šikmo; u rukávu platí šířka × výška. Potisk lze umístit kamkoli na dané straně a nejde zvětšit nad limit. Každá strana s potiskem se počítá jako jeden potisk. Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem nebo posuvník Otočení ho natáčí o libovolný úhel (limit se měří podle rozměru motivu, takže i A4 jde natočit šikmo).</p></details>
+  <details class="mu"><summary style="cursor:pointer">Jak na to a maximální velikosti</summary><p style="margin:6px 0 0">Pravítka a popisky ukazují velikost a polohu potisku v cm (růžové čáry ukazují vzdálenost od výstřihu, límce nebo ramene, od spodního lemu a od středu; u svislé i vodorovné osy se motiv sám přichytí). Největší velikost: <span id="limtxt"></span>. Na předku, zádech a štítku může být potisk na výšku, na šířku i šikmo; u rukávu platí šířka × výška. Potisk lze umístit kamkoli na dané straně a nejde zvětšit nad limit. Prvky blíž než 3 cm u sebe tvoří jeden potisk; prvky dál od sebe jsou samostatné potisky (každý za 100 Kč), proto může být na jedné straně třeba malé logo nahoře a nápis dole. Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem nebo posuvník Otočení ho natáčí o libovolný úhel (limit se měří podle rozměru motivu, takže i A4 jde natočit šikmo).</p></details>
  </section>
  <div class="bar card">
   <div class="bsz"><div class="sizes" id="sizes"></div><div class="mu" id="avail" style="font-size:12px;margin-top:4px"></div></div>
@@ -111,7 +111,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 // ===== NASTAVENÍ (upravte podle sebe) =====
 // ===== NASTAVENÍ (ceny jsou s DPH) =====
 const CFG={printPrice:100,graphicFee:349,bulkMin:10,orderEmail:"obchod@texo.cz",formId:"e62f0e25f9607e8c4ffc07fa830b39b5",iban:"CZ1562106701002206315680",acct:"670100-2206315680/6210",accName:"TEXO",bigOrderQty:9999,
- ship:{pickup:89,home:129},lastOrder:"2026-12-18",guarantee:"2026-12-15",shipText:"21. 12. 2026",maxUpload:4.5*1024*1024,cloudName:"ibs5fasq",w3key:"43377c33-a9c9-4cb7-bca1-6da4a2f2dd50",preset:"navrhar",cloudMax:9.5*1024*1024,minDpi:150};
+ ship:{pickup:89,home:129},lastOrder:"2026-12-18",guarantee:"2026-12-15",shipText:"21. 12. 2026",maxUpload:4.5*1024*1024,cloudName:"ibs5fasq",w3key:"43377c33-a9c9-4cb7-bca1-6da4a2f2dd50",preset:"navrhar",cloudMax:9.5*1024*1024,minDpi:150,gapCm:3};
 // Modely triček. Ceny a barvy z exportu produktů. pxCm = kolik px náhledu je 1 cm (dětské: velikost 122 = 6 let, šířka 36 cm, délka 48 cm; náhled je kompromis mezi oběma).
 // Dětské velikosti podle výšky postavy: 110 = 4 roky, 122 = 6 let, 134 = 8 let, 146 = 10 let, 158 = 12 let.
 // sleeve: největší potisk rukávu [šířka, výška] v cm – buď jeden pro všechny velikosti, nebo podle velikosti (platí nejmenší z objednaných).
@@ -169,37 +169,46 @@ function cornersOf(o){const w=o.width*(o.scaleX||1)/2,h=o.height*(o.scaleY||1)/2
  return[[-w,-h],[w,-h],[w,h],[-w,h]].map(p=>[o.left+p[0]*c-p[1]*n,o.top+p[0]*n+p[1]*c])}
 function objsOf(sd){return sd===side&&!loading?cv.getObjects():(pobj[sd]||[])}
 // Najde natočení, ve kterém je celý potisk strany nejmenší (0° nebo úhel některého prvku) – A4 tak může být i šikmo.
-function frameOf(sd){const L=objsOf(sd);if(!L.length)return null;const P=L.flatMap(cornersOf),pc=pxOf(sd),lim=limOf(sd);
+function frameOfList(sd,L){if(!L.length)return null;const P=L.flatMap(cornersOf),pc=pxOf(sd),lim=limOf(sd);
  const strict=sd==="left"||sd==="right",ths=strict?[0]:[0,...L.map(o=>o.angle||0)];let best=null;
  ths.forEach(t=>{const r=t*Math.PI/180,c=Math.cos(r),n=Math.sin(r);let a0=1e9,a1=-1e9,b0=1e9,b1=-1e9;
   P.forEach(p=>{const u=p[0]*c+p[1]*n,v=-p[0]*n+p[1]*c;a0=Math.min(a0,u);a1=Math.max(a1,u);b0=Math.min(b0,v);b1=Math.max(b1,v)});
-  const w=(a1-a0)/pc,h=(b1-b0)/pc,ok=(w<=lim[0]+.3&&h<=lim[1]+.3)||(!strict&&w<=lim[1]+.3&&h<=lim[0]+.3),f={t,c,n,a0,a1,b0,b1,w,h,ok};
+  const w=(a1-a0)/pc,h=(b1-b0)/pc,ok=(w<=lim[0]+.3&&h<=lim[1]+.3)||(!strict&&w<=lim[1]+.3&&h<=lim[0]+.3),f={t,c,n,a0,a1,b0,b1,w,h,ok,L};
   if(!best||(f.ok&&!best.ok)||(f.ok===best.ok&&w*h<best.w*best.h))best=f});return best}
+// Skupiny potisků: prvky, jejichž obrysy jsou od sebe blíž než gapCm, tvoří jeden potisk; vzdálenější prvky jsou samostatné potisky (každý se účtuje zvlášť).
+function groupsOf(sd){const L=objsOf(sd);if(!L.length)return[];const g=CFG.gapCm*pxOf(sd),B=L.map(bboxOf),par=L.map((_,i)=>i),find=i=>par[i]===i?i:(par[i]=find(par[i]));
+ for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++){const a=B[i],b=B[j];const dx=Math.max(0,Math.max(a[0],b[0])-Math.min(a[2],b[2])),dy=Math.max(0,Math.max(a[1],b[1])-Math.min(a[3],b[3]));if(Math.hypot(dx,dy)<g)par[find(i)]=find(j)}
+ const m={};L.forEach((o,i)=>{(m[find(i)]=m[find(i)]||[]).push(o)});
+ return Object.values(m).map(l=>frameOfList(sd,l)).sort((a,b)=>{const ca=a.L.reduce((t,o)=>t+o.top,0)/a.L.length,cb=b.L.reduce((t,o)=>t+o.top,0)/b.L.length;return ca-cb})}
+function frameOf(sd){const G=groupsOf(sd);if(!G.length)return null;return G.find(f=>!f.ok)||G[0]}
 function sideBox(sd){const f=frameOf(sd);return f?{w:f.w,h:f.h}:null}
 function sleeveLim(){const S=MODEL.sleeve;if(Array.isArray(S))return S;const ins=[...document.querySelectorAll(".sizes input")];let u=SIZES.filter((s,ix)=>ins[ix]&&cnt(ins[ix])>0);if(!u.length)u=SIZES;
  return[Math.min(...u.map(s=>S[s][0])),Math.min(...u.map(s=>S[s][1]))]}
 const lt=l=>f1(l[0])+" × "+f1(l[1])+" cm";
 function limText(){return "předek a záda "+lt(MODEL.bodyMax)+", rukáv "+lt(sleeveLim())+(Array.isArray(MODEL.sleeve)?"":" (podle nejmenší objednané velikosti)")+", štítek uvnitř "+lt(MODEL.labelMax)}
 const limOf=sd=>sd==="label"?MODEL.labelMax:sd==="left"||sd==="right"?sleeveLim():MODEL.bodyMax,f1=v=>(Math.round(v*10)/10).toString().replace(".",",");
-function fits(sd){const f=frameOf(sd);return!f||f.ok}
+function fits(sd){return groupsOf(sd).every(f=>f.ok)}
 function dpiText(sd){const L=objsOf(sd).map(o=>[o.fname,dpiOf(sd,o)]).filter(x=>x[1]!==null);return L.length?"; rozlišení "+L.map(x=>x[0]+" asi "+x[1]+" dpi"+(x[1]<CFG.minDpi?" (NÍZKÉ)":"")).join(", "):""}
-function posText(sd){const L=objsOf(sd);if(!L.length)return"";const r=REF[sd],pc=pxOf(sd),f=v=>f1(Math.abs(v));let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
- L.forEach(o=>{const b=bboxOf(o);x0=Math.min(x0,b[0]);y0=Math.min(y0,b[1]);x1=Math.max(x1,b[2]);y1=Math.max(y1,b[3])});const P=[],dx=((x0+x1)/2-r.x)/pc;
+function groupPos(sd,F){const r=REF[sd],pc=pxOf(sd),f=v=>f1(Math.abs(v));let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+ F.L.forEach(o=>{const b=bboxOf(o);x0=Math.min(x0,b[0]);y0=Math.min(y0,b[1]);x1=Math.max(x1,b[2]);y1=Math.max(y1,b[3])});const P=[],dx=((x0+x1)/2-r.x)/pc;
  if(sd==="label")P.push("plocha 2 cm pod límcem");else P.push(f((y0-r.y)/pc)+" cm "+r.yn);
  if(r.b&&!r.nb)P.push(f((r.b-y1)/pc)+" cm "+r.bn);
  P.push(Math.abs(dx)<0.3?"vodorovně na středu":f(dx)+" cm "+(dx>0?"vpravo":"vlevo")+" od středu (při pohledu na tričko)");
  if(r.b){const dy=((y0+y1)/2-(r.y+r.b)/2)/pc;P.push(Math.abs(dy)<0.3?"svisle na středu výšky":f(dy)+" cm "+(dy>0?"pod":"nad")+" středem výšky")}
- const F=frameOf(sd),a=F?Math.round(((F.t%360)+360)%360):0;if(a)P.push("otočeno o "+a+"°");return P.join(", ")}
+ const a=Math.round(((F.t%360)+360)%360);if(a)P.push("otočeno o "+a+"°");return P.join(", ")}
+function posText(sd){const F=frameOf(sd);return F?groupPos(sd,F):""}
+function groupText(sd,F,ix,n){return "  Potisk "+(n>1?ix+1+" z "+n:"")+": "+f1(F.w)+" × "+f1(F.h)+" cm; "+groupPos(sd,F)+"\n"+F.L.map(o=>"  "+describeObj(o)).join("\n")}
 function sizeText(sd){const b=sideBox(sd);return b?"velikost "+f1(b.w)+" × "+f1(b.h)+" cm":"bez potisku"}
 // Ostrost nahraných obrázků: dpi = pixely obrázku / šířka potisku v palcích (SVG je vektor, ten se nekontroluje).
 function dpiOf(sd,o){const f=UPLOADS[o.fname];if(o.type!=="image"||!f||/svg|pdf/.test(f.type))return null;return Math.round(2.54*pxOf(sd)*(o.pxk||1)/Math.max(o.scaleX||1,o.scaleY||1))}
 function worstDpi(sd){let w=null;objsOf(sd).forEach(o=>{const d=dpiOf(sd,o);if(d!==null&&(!w||d<w.d))w={d:d,n:o.fname}});return w}
 function updateSize(){drawMeasure();if($("cartmsg")&&$("cartmsg").textContent&&!SIDES.some(sd=>{const w=worstDpi(sd);return(w&&w.d<CFG.minDpi)||!fits(sd)}))$("cartmsg").textContent="";const el=$("sz");if(!el)return;const sl=side==="left"||side==="right",ori=sl?"šířka × výška":"na výšku i na šířku",b=sideBox(side),l=limOf(side),mx="max. "+f1(l[0])+" × "+f1(l[1])+" cm"+((side==="left"||side==="right")&&!Array.isArray(MODEL.sleeve)?" pro objednané velikosti":"");
- if(!b){el.textContent="Největší velikost potisku na této straně: "+mx+" ("+ori+").";el.style.color="";return}
- const ok=fits(side),w=worstDpi(side),low=w&&w.d<CFG.minDpi;el.textContent="Potisk: "+f1(b.w)+" × "+f1(b.h)+" cm ("+mx+", "+ori+")"+(ok?"":" – je příliš velký, zmenšete ho.")+
+ if(!b){el.textContent="Největší velikost jednoho potisku na této straně: "+mx+" ("+ori+").";el.style.color="";return}
+ const G=groupsOf(side),ok=fits(side),w=worstDpi(side),low=w&&w.d<CFG.minDpi,bad=G.find(f=>!f.ok)||G[0];
+ el.textContent=(G.length>1?G.length+" samostatné potisky na této straně (každý "+CFG.printPrice+" Kč). Největší: ":"Potisk: ")+f1(bad.w)+" × "+f1(bad.h)+" cm ("+mx+", "+ori+")"+(ok?"":" – je příliš velký, zmenšete ho nebo rozdělte prvky dál od sebe (víc než "+CFG.gapCm+" cm), aby šly tisknout zvlášť.")+
   (low?" Pozor: obrázek „"+w.n+"“ je na tuto velikost málo ostrý (asi "+w.d+" dpi, doporučujeme alespoň "+CFG.minDpi+" dpi). Zmenšete ho nebo nahrajte větší soubor – s takto nízkou ostrostí objednávku nepůjde odeslat.":w?" Ostrost obrázku: asi "+w.d+" dpi – v pořádku.":"");
  el.style.color=!ok?"#c0392b":low?"#b35c00":""}
-function printZones(){const set=new Set();SIDES.forEach(sd=>{if(objsOf(sd).length)set.add(sd)});return set}
+function printZones(){const set=new Set();SIDES.forEach(sd=>{groupsOf(sd).forEach((g,i)=>set.add(sd+"#"+i))});return set}
 const cnt=i=>Math.max(0,Math.min(999,parseInt(i.value)||0));
 const isBulk=()=>qty()>=CFG.bulkMin;
 function qty(){return [...document.querySelectorAll(".sizes input")].reduce((a,i)=>a+cnt(i),0)}
@@ -223,13 +232,13 @@ function drawMeasure(){const svg=$("meas");if(!svg)return;const r=REF[side],pc=p
  const lab=pc>15?2:5;
  for(let k=Math.ceil(-r.x/pc);k<=Math.floor((480-r.x)/pc);k++){const x=r.x+k*pc,big=k%lab===0;h+=`<line class="tk" x1="${x}" y1="0" x2="${x}" y2="${big?8:4}"/>`;if(big&&x>8&&x<472)h+=`<text class="tn" x="${x}" y="15" text-anchor="middle">${Math.abs(k)}</text>`}
  for(let k=Math.max(0,Math.ceil((16-r.y)/pc));k<=Math.floor((520-r.y)/pc);k++){const y=r.y+k*pc,big=k%lab===0;h+=`<line class="tk" x1="0" y1="${y}" x2="${big?8:4}" y2="${y}"/>`;if(big&&y>22&&y<514)h+=`<text class="tn" x="9" y="${y+3}">${k}</text>`}
- const L=cv.getObjects(),F=frameOf(side);
- if(L.length&&F){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;L.forEach(o=>{const b=bboxOf(o);x0=Math.min(x0,b[0]);y0=Math.min(y0,b[1]);x1=Math.max(x1,b[2]);y1=Math.max(y1,b[3])});
+ const L=cv.getObjects(),G=groupsOf(side),F=frameOf(side);
+ if(L.length&&F){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;F.L.forEach(o=>{const b=bboxOf(o);x0=Math.min(x0,b[0]);y0=Math.min(y0,b[1]);x1=Math.max(x1,b[2]);y1=Math.max(y1,b[3])});
   const ok=F.ok,top=(y0-r.y)/pc,cx=(x0+x1)/2,cy=(y0+y1)/2,dx=(cx-r.x)/pc,P=(u,v)=>[u*F.c-v*F.n,u*F.n+v*F.c],Q=[P(F.a0,F.b0),P(F.a1,F.b0),P(F.a1,F.b1),P(F.a0,F.b1)],pts=Q.map(q=>q.join(",")).join(" ");
   h+=`<rect class="sel" x="${x0}" y="0" width="${x1-x0}" height="16"/><rect class="sel" x="0" y="${Math.max(16,y0)}" width="18" height="${Math.max(0,y1-Math.max(16,y0))}"/>`;
   h+=`<g id="mg" style="transition:opacity .5s;opacity:${(gVis||!ok)?1:0}">`;
   // svislá vzdálenost od výstřihu / límce / ramene
-  if(side!=="label"&&top>0.2){h+=gl(cx,r.y,cx,y0,"gd");const ld=cx>300;h+=pill(ld?cx-8:cx+8,(y0-r.y)<40?Math.max(26,r.y-10):(r.y+y0)/2,f(top)+" cm "+r.yn.split(" ")[0]+" "+r.yn.split(" ").slice(1).join(" "),false,ld?"end":"start")}
+  if(side!=="label"&&top>0.2){h+=gl(cx,r.y,cx,y0,"gd");const ld=cx>300;h+=pill(ld?x0-8:x1+8,(y0-r.y)<40?y0+10:(r.y+y0)/2,f(top)+" cm "+r.yn.split(" ")[0]+" "+r.yn.split(" ").slice(1).join(" "),false,ld?"end":"start")}
   // vzdálenost od spodního lemu a vodorovná osa (polovina mezi výstřihem a lemem)
   const bot=(r.b-y1)/pc,ay=(r.y+r.b)/2;
   if(r.b&&!r.nb&&bot>0.2){const lb=cx>300;h+=gl(cx,y1,cx,r.b,"gd");h+=pill(lb?cx-8:cx+8,(r.b-y1)<40?Math.min(500,r.b+12):(y1+r.b)/2,f(bot)+" cm "+r.bn,false,lb?"end":"start")}
@@ -238,9 +247,10 @@ function drawMeasure(){const svg=$("meas");if(!svg)return;const r=REF[side],pc=p
   if(r.h){if(Math.abs(dx)<0.3){h+=gl(r.x,16,r.x,520,"gc");h+=pill(r.x,y1+16,"na středu",false)}
    else{h+=gl(r.x,16,r.x,520,"gf");h+=gl(r.x,cy,cx,cy,"gd");h+=pill((r.x+cx)/2,cy-14,f(dx)+" cm od středu",false)}}
   // obrys a rozměry
+  G.forEach(g2=>{if(g2===F)return;const P2=(u,v)=>[u*g2.c-v*g2.n,u*g2.n+v*g2.c],q=[P2(g2.a0,g2.b0),P2(g2.a1,g2.b0),P2(g2.a1,g2.b1),P2(g2.a0,g2.b1)].map(x=>x.join(",")).join(" ");h+=`<polygon class="bw" points="${q}"/><polygon class="bx${g2.ok?"":" bad"}" points="${q}"/>`;const tq=[(P2(g2.a0,g2.b0)[0]+P2(g2.a1,g2.b0)[0])/2,(P2(g2.a0,g2.b0)[1]+P2(g2.a1,g2.b0)[1])/2];h+=pill(tq[0],tq[1]-14,f1(g2.w)+" × "+f1(g2.h)+" cm",!g2.ok)});
   h+=`<polygon class="bw" points="${pts}"/><polygon class="bx${ok?"":" bad"}" points="${pts}"/>`;
   const m=(i,j)=>[(Q[i][0]+Q[j][0])/2,(Q[i][1]+Q[j][1])/2],tw=m(0,1),th=m(1,2);
-  h+=pill(tw[0],tw[1]-14,f(F.w)+" cm",!ok);const hr=th[0]+60<470;h+=hr?pill(th[0]+8,th[1],f(F.h)+" cm",!ok,"start"):pill(m(3,0)[0]-8,m(3,0)[1],f(F.h)+" cm",!ok,"end");
+  const near=side!=="label"&&top>0.2&&(y0-r.y)<40;if(near)h+=pill(tw[0],tw[1]-14,f(F.w)+" × "+f(F.h)+" cm",!ok);else h+=pill(tw[0],tw[1]-14,f(F.w)+" cm",!ok);if(!near){const hr=th[0]+60<470;h+=hr?pill(th[0]+8,th[1],f(F.h)+" cm",!ok,"start"):pill(m(3,0)[0]-8,m(3,0)[1],f(F.h)+" cm",!ok,"end")}
   const ang=Math.round(((F.t%360)+360)%360);if(ang)h+=pill(cx,Math.min(508,y1+(r.h&&Math.abs(dx)<0.3?38:16)),"otočeno o "+ang+"°",false)}
  if(L.length&&F)h+="</g>";svg.innerHTML=h}
 const CENTER={front:[240,230],back:[240,198],left:[373,138],right:[107,138],label:[240,260]};
@@ -344,10 +354,11 @@ const fmtD=d=>d.getDate()+". "+(d.getMonth()+1)+". "+d.getFullYear();
 function xmasText(){if(new Date()>new Date("2026-12-24T23:59:59"))return "Objednávky expedujeme do tří pracovních dnů.";return "Objednávky expedujeme do tří pracovních dnů. Doručení do Štědrého dne garantujeme pro objednávky uhrazené do "+fmtD(new Date(CFG.guarantee+"T12:00:00"))+"."}
 $("xmas").textContent=xmasText();$("xmas2").textContent=xmasText();$("omail").textContent=CFG.orderEmail;$("bulkmail").textContent=CFG.orderEmail;$("bulkmail").href="mailto:"+CFG.orderEmail;
 function sideObjs(sd){return objsOf(sd).map(o=>({o:o}))}
-function describe(sd){return sideObjs(sd).map(r=>{const o=r.o;if(o.type==="i-text"||o.type==="text")return "- text „"+o.text+"“, písmo "+o.fontFamily+", barva "+o.fill;const n=o.fname||"";return "- "+(UPLOADS[n]?"nahraný obrázek "+n:"motiv z knihovny "+(n||"(neznámý)"))}).join("\n")}
+function describeObj(o){if(o.type==="i-text"||o.type==="text")return "- text „"+o.text+"“, písmo "+o.fontFamily+", barva "+o.fill;const n=o.fname||"";return "- "+(UPLOADS[n]?"nahraný obrázek "+n:"motiv z knihovny "+(n||"(neznámý)"))}
+function describe(sd){const G=groupsOf(sd);return G.map((F,ix)=>groupText(sd,F,ix,G.length)).join("\n")}
 function itemText(){const n=printZones().size,L=["Zboží: "+MODEL.name+", barva "+$("cname").textContent];
  [...document.querySelectorAll(".sizes input")].forEach((i,ix)=>{const c=cnt(i);if(c)L.push("Velikost "+SIZES[ix]+(MODEL.age?" ("+MODEL.age[SIZES[ix]]+")":"")+": "+c+" ks po "+(priceOf(SIZES[ix])+CFG.printPrice*n)+" Kč")});
- L.push("Potisků na kus: "+n+" × "+CFG.printPrice+" Kč","Grafická úprava a kontrola: "+($("gfx").checked?"ANO (+"+CFG.graphicFee+" Kč)":"ne"),"Cena položky: "+SUM+" Kč",...SIDES.flatMap(sd=>{const d=describe(sd);return d?["",SIDENAME[sd]+" ("+sizeText(sd)+"; "+posText(sd)+dpiText(sd)+"):",d]:[]}));return L.join("\n")}
+ L.push("Potisků na kus: "+n+" × "+CFG.printPrice+" Kč (samostatný potisk = prvky dál než "+CFG.gapCm+" cm od sebe)","Grafická úprava a kontrola: "+($("gfx").checked?"ANO (+"+CFG.graphicFee+" Kč)":"ne"),"Cena položky: "+SUM+" Kč",...SIDES.flatMap(sd=>{const d=describe(sd),G=groupsOf(sd);return d?["",SIDENAME[sd]+" – "+G.length+" potisk"+(G.length===1?"":G.length<5?"y":"ů")+dpiText(sd)+":",d]:[]}));return L.join("\n")}
 function summary(ref){const pick=document.querySelector("input[name=fm]:checked").value==="pickup";
  return ["Číslo: "+ref,"Položek: "+CART.length,...CART.flatMap((it,ix)=>["","===== POLOŽKA "+(ix+1)+" (soubory p"+(ix+1)+"-…) =====",it.text]),"","Zboží s DPH: "+cartSum()+" Kč","Doprava: Zásilkovna, "+(pick?"výdejní místo nebo Z-BOX":"na adresu")+", "+shipCost()+" Kč","CELKEM K ÚHRADĚ: "+orderTotal()+" Kč (VS "+ref.replace(/\D/g,"")+")"].join("\n")}
 // Velký originál zmenší na nejvýš 3508 px (A4 při 300 dpi) a znovu uloží, aby se vešel do přílohy.
