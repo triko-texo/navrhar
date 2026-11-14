@@ -40,7 +40,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 48</div>
+  <h1>Návrhář potisku</h1><div class="mu">Pánské tričko Classic · verze 49</div>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
   <input type="text" id="txt" placeholder="Váš text" aria-label="Text potisku">
@@ -68,7 +68,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
  <div class="bar card">
   <div class="bsz"><div class="sizes" id="sizes"></div></div>
   <div class="bpr"><div class="mu">Za kus: <b id="unit">–</b> <span id="info"></span></div><div class="price" id="total">–</div><label class="mu"><input type="checkbox" id="gfx"> Grafická úprava a kontrola (+349 Kč)</label><div class="mu" id="bulk" hidden>Nad 50 ks řešíme objednávky individuálně. Pošlete poptávku a připravíme nabídku.</div></div>
-  <div class="bact"><button class="main" id="cart">Přidat do košíku</button></div>
+  <div class="bact"><button class="main" id="cart">Přidat do košíku</button><p id="cartmsg" role="alert" style="color:#c0392b;font-size:13px;margin:6px 0 0"></p></div>
  </div>
 </div>
 <div id="modal" hidden><div class="mbox" role="dialog" aria-label="Motivy">
@@ -124,7 +124,7 @@ const SHIRT={front:{u:"data:image/webp;base64,UklGRipzAABXRUJQVlA4WAoAAAAQAAAADQ
 const $=id=>document.getElementById(id);
 const cv=new fabric.Canvas("c",{preserveObjectStacking:true});
 let side="front",data={front:null,back:null,left:null,right:null,label:null},color=COLORS[0];
-const say=t=>{$("msg").textContent=t};
+const say=t=>{$("msg").textContent=t};const block=t=>{say(t);$("cartmsg").textContent=t};
 const SIMG={};SIDES.filter(n=>n!=="label").forEach(n=>{const k=n==="right"?"left":n,im=new Image();im.onload=()=>{if(n===side)drawShirt()};im.src=SHIRT[k].u;SIMG[n]=im});
 function paintShirt(ctx,sd,k){if(sd==="label"){ctx.save();ctx.scale(k,k);ctx.fillStyle="#eef0f2";ctx.fillRect(0,0,480,520);ctx.fillStyle="#9aa1a8";ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText("Vnitřní štítek – pohled zevnitř (zvětšeno, plocha začíná 2 cm pod límcem)",240,70);
  ctx.fillStyle="#fff";ctx.strokeStyle="#b7bdc3";ctx.lineWidth=1.5;ctx.fillRect(93,92,294,336);ctx.strokeRect(93,92,294,336);ctx.restore();return}
@@ -167,10 +167,10 @@ function sizeText(sd){const b=sideBox(sd);return b?"velikost "+f1(b.w)+" × "+f1
 // Ostrost nahraných obrázků: dpi = pixely obrázku / šířka potisku v palcích (SVG je vektor, ten se nekontroluje).
 function dpiOf(sd,o){const f=UPLOADS[o.fname];if(o.type!=="image"||!f||/svg|pdf/.test(f.type))return null;return Math.round(2.54*pxOf(sd)/Math.max(o.scaleX||1,o.scaleY||1))}
 function worstDpi(sd){let w=null;objsOf(sd).forEach(o=>{const d=dpiOf(sd,o);if(d!==null&&(!w||d<w.d))w={d:d,n:o.fname}});return w}
-function updateSize(){drawMeasure();const el=$("sz");if(!el)return;const b=sideBox(side),l=limOf(side),mx="max. "+f1(l[0])+" × "+f1(l[1])+" cm";
+function updateSize(){drawMeasure();if($("cartmsg")&&$("cartmsg").textContent&&!SIDES.some(sd=>{const w=worstDpi(sd);return(w&&w.d<CFG.minDpi)||!fits(sd)}))$("cartmsg").textContent="";const el=$("sz");if(!el)return;const b=sideBox(side),l=limOf(side),mx="max. "+f1(l[0])+" × "+f1(l[1])+" cm";
  if(!b){el.textContent="Největší velikost potisku na této straně: "+mx+" (na výšku i na šířku).";el.style.color="";return}
  const ok=fits(side),w=worstDpi(side),low=w&&w.d<CFG.minDpi;el.textContent="Potisk: "+f1(b.w)+" × "+f1(b.h)+" cm ("+mx+", na výšku i na šířku)"+(ok?"":" – je příliš velký, zmenšete ho.")+
-  (low?" Pozor: obrázek „"+w.n+"“ je na tuto velikost málo ostrý (asi "+w.d+" dpi, doporučujeme alespoň "+CFG.minDpi+" dpi). Zmenšete ho nebo nahrajte větší soubor, jinak může být tisk rozmazaný.":w?" Ostrost obrázku: asi "+w.d+" dpi – v pořádku.":"");
+  (low?" Pozor: obrázek „"+w.n+"“ je na tuto velikost málo ostrý (asi "+w.d+" dpi, doporučujeme alespoň "+CFG.minDpi+" dpi). Zmenšete ho nebo nahrajte větší soubor – s takto nízkou ostrostí objednávku nepůjde odeslat.":w?" Ostrost obrázku: asi "+w.d+" dpi – v pořádku.":"");
  el.style.color=!ok?"#c0392b":low?"#b35c00":""}
 function printZones(){const set=new Set();SIDES.forEach(sd=>{if(sd===side?cv.getObjects().length:(()=>{try{return JSON.parse(data[sd]).objects.length}catch(e){return 0}})())set.add(sd)});return set}
 function qty(){return [...document.querySelectorAll(".sizes input")].reduce((a,i)=>a+(parseInt(i.value)||0),0)}
@@ -321,7 +321,10 @@ function orderTotal(){return SUM+(qty()>CFG.bulkLimit?0:shipCost())}
 function refreshOrder(){const bulk=qty()>CFG.bulkLimit;$("onotice").textContent=bulk?"Po odeslání se vám ozveme s cenovou nabídkou.":"Po odeslání zaplatíte QR kódem. Objednávku zpracujeme po přijetí platby a kontrole návrhu, potvrzení vám pošleme e-mailem.";const m=document.querySelector('input[name=fm]:checked').value;
  $("shipbox").hidden=bulk;$("fal").textContent=bulk?"Adresa":(m==="pickup"?"Výdejní místo (název a adresa nebo kód)":"Adresa pro doručení");
  $("osum").textContent=MODEL.name+", "+$("cname").textContent+" · zboží "+SUM+" Kč"+(bulk?"":" + doprava "+shipCost()+" Kč = celkem "+orderTotal()+" Kč")}
-function openOrder(){const q=qty();const big=SIDES.filter(sd=>!fits(sd));if(big.length){say("Potisk je příliš velký: "+big.map(sd=>SIDENAME[sd].toLowerCase()).join(", ")+". Zmenšete ho na povolenou velikost (20 × 29,7 cm na těle, 10,5 × 12 cm na rukávu a štítku).");return}if(!q){say("Zadejte počet kusů alespoň u jedné velikosti.");return}
+function openOrder(){$("cartmsg").textContent="";const q=qty();
+ const blur=SIDES.map(sd=>[sd,worstDpi(sd)]).filter(x=>x[1]&&x[1].d<CFG.minDpi);
+ if(blur.length){const sd=blur[0][0],w=blur[0][1];if(sd!==side)switchSide(sd);
+  block("Objednávku nelze odeslat: obrázek „"+w.n+"“ ("+SIDENAME[sd].toLowerCase()+") má na zvolenou velikost jen asi "+w.d+" dpi, potřebujeme alespoň "+CFG.minDpi+" dpi. Obrázek zmenšete, nebo nahrajte větší soubor ve vyšším rozlišení.");return}const big=SIDES.filter(sd=>!fits(sd));if(big.length){block("Potisk je příliš velký: "+big.map(sd=>SIDENAME[sd].toLowerCase()).join(", ")+". Zmenšete ho na povolenou velikost (20 × 29,7 cm na těle, 10,5 × 12 cm na rukávu a štítku).");return}if(!q){say("Zadejte počet kusů alespoň u jedné velikosti.");return}
  if(!printZones().size){say("Přidejte na tričko alespoň jeden text nebo obrázek.");return}
  const bulk=q>CFG.bulkLimit;$("otitle").textContent=bulk?"Poptávka nad "+CFG.bulkLimit+" ks":"Dokončit objednávku";$("osend").textContent=bulk?"Odeslat poptávku":"Odeslat objednávku";
  if(!$("fs").options.length)Object.keys(CFG.ship).forEach(k=>$("fs").add(new Option(k,k)));refreshOrder();$("oerr").textContent="";$("oform").hidden=false;$("odone").hidden=true;$("omodal").hidden=false;$("fn").focus()}
