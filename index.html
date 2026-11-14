@@ -41,7 +41,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">verze 67</div>
+  <h1>Návrhář potisku</h1><div class="mu">verze 68</div>
   <h2>Tričko</h2><select id="model" aria-label="Typ trička"></select>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <div id="msg" role="status"></div>
@@ -473,7 +473,7 @@ async function sendCloud(ref,mocks,layers,orig){const items=[...mocks,...orig.ma
  const bulk=false,body={_subject:(bulk?"POPTÁVKA ":"OBJEDNÁVKA ")+ref+" – návrhář potisku",_template:"table",_captcha:"false",
   "Číslo":ref,"Jméno":$("fn").value,email:$("fe").value,"Telefon":$("ft").value,"Adresa / výdejní místo":$("fa").value,"Poznámka zákazníka":$("fz").value,"Obchodní podmínky":"odsouhlaseny, informace o zpracování údajů vzaty na vědomí",
   "Souhrn":summary(ref)+(shr.length?"\n\nZMENŠENO NA 3508 px (A4 při 300 dpi): "+shr.join(", "):"")+(bad.length?"\n\nNENAHRÁNO: "+bad.join(", "):""),
-  "Soubory ke stažení":links.join("\n")||"(žádné)"};
+  "Soubory ke stažení":links.length?links.length+" souborů, viz níže":"(žádné)"};links.forEach((l,i)=>{const k=l.indexOf(": ");body["Soubor "+(i+1)+" – "+l.slice(0,k)]=l.slice(k+2)});
  $("osend").textContent="Odesílám objednávku…";let ok=false,msg="";
  // 1) Web3Forms – rychlé, s potvrzením doručení
  if(CFG.w3key){const w={access_key:CFG.w3key,subject:body._subject,from_name:"Návrhář potisku texo.cz",replyto:$("fe").value,botcheck:""};
@@ -481,7 +481,9 @@ async function sendCloud(ref,mocks,layers,orig){const items=[...mocks,...orig.ma
   try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),20000);const r=await fetch("https://api.web3forms.com/submit",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(w),signal:ac.signal});clearTimeout(tm);
    const j=await r.json().catch(()=>({}));ok=r.ok&&j.success===true;msg=j.message||("HTTP "+r.status);console.log("Web3Forms:",r.status,j)}catch(e){msg=String(e)}
   if(ok)ROUTE="Web3Forms ("+msg+")";else{console.warn("Web3Forms selhal:",msg);$("osend").textContent="Odesílám objednávku… může to trvat až minutu, nezavírejte okno"}}
- // 2) záloha FormSubmit
+ // 2) kopie na obchod@texo.cz přes FormSubmit vždy (na pozadí); když Web3Forms selhal, čeká se na ni
+ const fsSend=()=>fetch("https://formsubmit.co/ajax/"+CFG.formId,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(body)});
+ if(ok){fsSend().then(r=>r.json().then(j=>console.log("FormSubmit kopie:",r.status,j))).catch(e=>console.warn("FormSubmit kopie selhala:",e))}
  for(let t=0;t<1&&!ok;t++){try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),45000);const r=await fetch("https://formsubmit.co/ajax/"+CFG.formId,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(body),signal:ac.signal});clearTimeout(tm);
   const j=await r.json().catch(()=>({}));ok=r.ok&&String(j.success)==="true";msg=j.message||("HTTP "+r.status);console.log("FormSubmit:",r.status,j);if(ok)ROUTE="FormSubmit ("+msg+")"}catch(e){msg=String(e)}}
  $("oref").textContent=ref;$("osend").disabled=false;$("osend").textContent="Odeslat objednávku";
