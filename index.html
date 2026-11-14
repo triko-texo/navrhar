@@ -40,7 +40,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">verze 59</div>
+  <h1>Návrhář potisku</h1><div class="mu">verze 60</div>
   <h2>Tričko</h2><select id="model" aria-label="Typ trička"></select>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
@@ -61,11 +61,11 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
    <svg id="meas" viewBox="0 0 480 520" aria-hidden="true"></svg>
   </div></div>
   <div class="row" style="margin-top:8px;align-items:center"><label for="rot" class="mu">Otočení vybraného prvku</label><input type="range" id="rot" min="0" max="359" step="1" value="0" style="flex:1;min-width:120px"><b id="rotv">0°</b></div>
-  <div class="row" style="margin-top:8px"><button id="dl">Stáhnout potisk (PNG)</button><button id="del">Smazat prvek</button></div>
+  <div class="row" style="margin-top:8px"><button id="flx" title="Zrcadlově převrátit vybraný prvek zleva doprava">Zrcadlit ⇆</button><button id="fly" title="Převrátit vybraný prvek vzhůru nohama">Převrátit ⇅</button><button id="dl">Stáhnout potisk (PNG)</button><button id="del">Smazat prvek</button></div>
   <p class="mu" id="sz" style="font-weight:600;margin:8px 0 4px"></p>
   <p class="mu" id="xmas" style="margin:4px 0"></p>
   <details class="mu" id="chart" hidden><summary style="cursor:pointer">Tabulka velikostí</summary><table id="chartb" style="border-collapse:collapse;margin:6px 0"></table><p style="margin:0">Měřeno na položeném tričku: šířka pod rukávy, délka od ramene u krku po spodní lem. Odchylka do 5 %.</p></details>
-  <details class="mu"><summary style="cursor:pointer">Jak na to a maximální velikosti</summary><p style="margin:6px 0 0">Pravítka a popisky ukazují velikost a polohu potisku v cm (růžové čáry ukazují vzdálenost od výstřihu, límce nebo ramene, od spodního lemu a od středu; u svislé i vodorovné osy se motiv sám přichytí). Největší velikost: <span id="limtxt"></span>. Na předku, zádech a štítku může být potisk na výšku, na šířku i šikmo; u rukávu platí šířka × výška. Potisk lze umístit kamkoli na dané straně a nejde zvětšit nad limit. Prvky blíž než 3 cm u sebe tvoří jeden potisk; prvky dál od sebe jsou samostatné potisky (každý za 100 Kč), proto může být na jedné straně třeba malé logo nahoře a nápis dole. Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem nebo posuvník Otočení ho natáčí o libovolný úhel (limit se měří podle rozměru motivu, takže i A4 jde natočit šikmo).</p></details>
+  <details class="mu"><summary style="cursor:pointer">Jak na to a maximální velikosti</summary><p style="margin:6px 0 0">Pravítka a popisky ukazují velikost a polohu potisku v cm (růžové čáry ukazují vzdálenost od výstřihu, límce nebo ramene, od spodního lemu a od středu; u svislé i vodorovné osy se motiv sám přichytí). Největší velikost: <span id="limtxt"></span>. Na předku, zádech a štítku může být potisk na výšku, na šířku i šikmo; u rukávu platí šířka × výška. Potisk lze umístit kamkoli na dané straně a nejde zvětšit nad limit. Prvky blíž než 3 cm u sebe tvoří jeden potisk; prvky dál od sebe jsou samostatné potisky (každý za 100 Kč), proto může být na jedné straně třeba malé logo nahoře a nápis dole. Klikněte na prvek a táhněte ho myší. Rohy mění velikost, kroužek nad prvkem nebo posuvník Otočení ho natáčí o libovolný úhel, tlačítka Zrcadlit a Převrátit ho překlopí (limit se měří podle rozměru motivu, takže i A4 jde natočit šikmo).</p></details>
  </section>
  <div class="bar card">
   <div class="bsz"><div class="sizes" id="sizes"></div><div class="mu" id="avail" style="font-size:12px;margin-top:4px"></div></div>
@@ -297,6 +297,8 @@ $("file").onchange=e=>{let f=e.target.files[0];e.target.value="";if(!f)return;if
  f=uniq(f);say("Načítám obrázek…");previewURL(f).then(p=>fabric.Image.fromURL(p.url,img=>{if(!img||!img.width){say("Obrázek se nepodařilo načíst. Zkuste jiný soubor (PNG, JPG, PDF).");return}
   say("Obrázek nahrán ("+(p.W||img.width)+" × "+(p.H||img.height)+" px). Pod tričkem uvidíte, jestli je na zvolenou velikost dost ostrý.");
   img.scale(Math.min(160/img.width,160/img.height));img.fname=f.name;img.pxk=p.k;UPLOADS[f.name]=f;add(img)})).catch(()=>say("Obrázek se nepodařilo načíst. Zkuste jiný soubor (PNG, JPG, PDF)."))};
+function flip(ax){const o=cv.getActiveObject();if(!o){say("Nejdřív klikněte na prvek, který chcete převrátit.");return}o.set(ax,!o[ax]);o.setCoords();cv.requestRenderAll();price();say(ax==="flipX"?"Prvek je zrcadlově převrácený.":"Prvek je převrácený vzhůru nohama.")}
+$("flx").onclick=()=>flip("flipX");$("fly").onclick=()=>flip("flipY");
 $("del").onclick=()=>{cv.getActiveObjects().forEach(o=>cv.remove(o));cv.discardActiveObject();cv.requestRenderAll();price()};
 document.addEventListener("keydown",e=>{const t=document.activeElement.tagName,o=cv.getActiveObject();if(e.key==="Delete"&&!/^(INPUT|TEXTAREA|SELECT)$/.test(t)&&!(o&&o.isEditing))$("del").click()});
 $("tf").onclick=()=>switchSide("front");$("tb").onclick=()=>switchSide("back");$("tl").onclick=()=>switchSide("left");$("tr").onclick=()=>switchSide("right");$("tg").onclick=()=>switchSide("label");
