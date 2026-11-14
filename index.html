@@ -40,7 +40,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 </style></head><body>
 <div class="app">
  <section class="card">
-  <h1>Návrhář potisku</h1><div class="mu">verze 54</div>
+  <h1>Návrhář potisku</h1><div class="mu">verze 56</div>
   <h2>Tričko</h2><select id="model" aria-label="Typ trička"></select>
   <h2>Barva trička</h2><div class="row" id="cols"></div><div class="mu" id="cname" style="margin-top:4px"></div>
   <h2>Text</h2>
@@ -69,7 +69,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
  </section>
  <div class="bar card">
   <div class="bsz"><div class="sizes" id="sizes"></div><div class="mu" id="avail" style="font-size:12px;margin-top:4px"></div></div>
-  <div class="bpr"><div class="mu">Za kus: <b id="unit">–</b> <span id="info"></span></div><div class="price" id="total">–</div><label class="mu"><input type="checkbox" id="gfx"> Grafická úprava a kontrola (+349 Kč)</label><div class="mu" id="bulk" hidden>Nad 50 ks řešíme objednávky individuálně. Pošlete poptávku a připravíme nabídku.</div></div>
+  <div class="bpr"><div class="mu">Za kus: <b id="unit">–</b> <span id="info"></span></div><div class="price" id="total">–</div><label class="mu"><input type="checkbox" id="gfx"> Grafická úprava a kontrola (+349 Kč)</label><div class="mu" id="bulk" hidden style="color:var(--tx);font-weight:600;margin-top:6px">Od 10 kusů se stejným potiskem jde o hromadnou objednávku, kterou přes návrhář objednat nelze. Napište nám prosím na <a id="bulkmail" href="#"></a> a připravíme vám nabídku. Návrh si můžete stáhnout tlačítkem „Stáhnout potisk (PNG)“ a přiložit k e-mailu.</div></div>
   <div class="bact"><button class="main" id="cart">Přidat do košíku</button><p id="cartmsg" role="alert" style="color:#c0392b;font-size:13px;margin:6px 0 0"></p></div>
  </div>
 </div>
@@ -109,7 +109,7 @@ input[type=text],select{width:100%;box-sizing:border-box;padding:7px;border:1px 
 <script>
 // ===== NASTAVENÍ (upravte podle sebe) =====
 // ===== NASTAVENÍ (ceny jsou s DPH) =====
-const CFG={printPrice:100,graphicFee:349,bulkLimit:50,orderEmail:"obchod@texo.cz",formId:"e62f0e25f9607e8c4ffc07fa830b39b5",iban:"CZ1562106701002206315680",acct:"670100-2206315680/6210",accName:"TEXO",bigOrderQty:9999,
+const CFG={printPrice:100,graphicFee:349,bulkMin:10,orderEmail:"obchod@texo.cz",formId:"e62f0e25f9607e8c4ffc07fa830b39b5",iban:"CZ1562106701002206315680",acct:"670100-2206315680/6210",accName:"TEXO",bigOrderQty:9999,
  ship:{"Zásilkovna":{pickup:[89,149],home:[129,179]},"PPL":{pickup:[76,78],home:[106,108]},"Balíkovna":{pickup:[89,149],home:[139,179]},"GLS":{pickup:[69,109],home:[94,134]}},lastOrder:"2026-12-18",guarantee:"2026-12-15",shipText:"21. 12. 2026",maxUpload:4.5*1024*1024,cloudName:"ibs5fasq",w3key:"43377c33-a9c9-4cb7-bca1-6da4a2f2dd50",preset:"navrhar",cloudMax:9.5*1024*1024,minDpi:150};
 // Modely triček. Ceny a barvy z exportu produktů. pxCm = kolik px náhledu je 1 cm (dětské: velikost 122 = 6 let, šířka 36 cm, délka 48 cm; náhled je kompromis mezi oběma).
 // Dětské velikosti podle výšky postavy: 110 = 4 roky, 122 = 6 let, 134 = 8 let, 146 = 10 let, 158 = 12 let.
@@ -136,6 +136,9 @@ MODELS.kids.shirt=SHIRT_KIDS;MODELS.kids.geo={front:{x:240,y:55,b:479,c:[240,170
 // Dětské funkční tričko PES: 6. položka barvy = velikosti, které jsou v dané barvě k dispozici (podle exportu z 8. 11. 2026).
 MODELS.pes=Object.assign({},MODELS.kids,{name:"Dětské tričko PES (funkční)",sizes:["110","122","134","146"],def:"110",chart:null,
  colors:[["Žlutá","žluté","#f7e017",55,null,["110","122"]],["Oranžová","orange","#f28c00",55,null,["134"]],["Tyrkysová","modré","#1fb5c9",55,null,["146"]]]});
+// Funkční tričko PES pro dospělé: ceny a dostupné velikosti podle barvy (export z 8. 11. 2026); limity potisku jako u Classic.
+MODELS.pesA=Object.assign({},MODELS.adult,{name:"Tričko PES (funkční)",
+ colors:[["Žlutá","žluté","#f7e017",98,null,["XS","S","M","L","XL","XXL"]],["Zelená","zelené","#2e8b3a",98,null,["XS","S","M","L","XL","XXL","XXXL"]],["Oranžová","orange","#f28c00",75,null,["XS","S","M","XL","XXL"]],["Tyrkysová","modré","#1fb5c9",65,null,["XS"]]]});
 const $=id=>document.getElementById(id);
 const cv=new fabric.Canvas("c",{preserveObjectStacking:true,selection:false});
 let side="front",data={front:null,back:null,left:null,right:null,label:null},color=MODEL.colors[0][2];
@@ -196,6 +199,7 @@ function updateSize(){drawMeasure();if($("cartmsg")&&$("cartmsg").textContent&&!
  el.style.color=!ok?"#c0392b":low?"#b35c00":""}
 function printZones(){const set=new Set();SIDES.forEach(sd=>{if(objsOf(sd).length)set.add(sd)});return set}
 const cnt=i=>Math.max(0,Math.min(999,parseInt(i.value)||0));
+const isBulk=()=>qty()>=CFG.bulkMin;
 function qty(){return [...document.querySelectorAll(".sizes input")].reduce((a,i)=>a+cnt(i),0)}
 let SUM=0;function price(){const zs=printZones(),n=zs.size;let q=0,sum=0;
  [...document.querySelectorAll(".sizes input")].forEach((i,ix)=>{const c=cnt(i);q+=c;sum+=c*(priceOf(SIZES[ix])+CFG.printPrice*n)});
@@ -204,7 +208,7 @@ let SUM=0;function price(){const zs=printZones(),n=zs.size;let q=0,sum=0;
  $("unit").textContent=(lo===hi?lo:lo+"–"+hi)+" Kč";
  $("info").textContent="· "+(n===0?"bez potisku":n+" × potisk "+CFG.printPrice+" Kč")+(g?" + grafická úprava "+g+" Kč":"");
  SUM=sum;$("total").textContent=sum+" Kč ("+q+" ks)";
- $("bulk").hidden=q<=CFG.bulkLimit;$("cart").textContent=q>CFG.bulkLimit?"Poslat poptávku":"Objednat";
+ $("bulk").hidden=!isBulk();$("cart").textContent=isBulk()?"Napsat e-mail":"Objednat";
  if($("limtxt"))$("limtxt").textContent=limText();updateSize()}
 const REF={front:{x:240,y:76,yn:"pod výstřihem",h:1,b:479,bn:"nad spodním lemem"},back:{x:240,y:44,yn:"pod límcem",h:1,b:479,bn:"nad spodním lemem"},left:{x:373,y:95,yn:"od ramene",h:1,b:236,bn:"nad okrajem rukávu"},right:{x:107,y:95,yn:"od ramene",h:1,b:236,bn:"nad okrajem rukávu"},label:{x:240,y:92,yn:"pod límcem",h:1,b:428,bn:"",nb:1}};
 let gVis=false,gT=0;
@@ -336,13 +340,13 @@ $("scol").oninput=()=>{rtok++;$("grid").innerHTML="";shown=0;render()};
 const UPLOADS={};let waiting=false,wtimer=0,pendingNote="";
 const fmtD=d=>d.getDate()+". "+(d.getMonth()+1)+". "+d.getFullYear();
 function xmasText(){if(new Date()>new Date("2026-12-24T23:59:59"))return "Objednávky expedujeme do tří pracovních dnů.";return "Objednávky expedujeme do tří pracovních dnů. Doručení do Štědrého dne garantujeme pro objednávky uhrazené do "+fmtD(new Date(CFG.guarantee+"T12:00:00"))+"."}
-$("xmas").textContent=xmasText();$("xmas2").textContent=xmasText();$("omail").textContent=CFG.orderEmail;
+$("xmas").textContent=xmasText();$("xmas2").textContent=xmasText();$("omail").textContent=CFG.orderEmail;$("bulkmail").textContent=CFG.orderEmail;$("bulkmail").href="mailto:"+CFG.orderEmail;
 function sideObjs(sd){return objsOf(sd).map(o=>({o:o}))}
 function describe(sd){return sideObjs(sd).map(r=>{const o=r.o;if(o.type==="i-text"||o.type==="text")return "- text „"+o.text+"“, písmo "+o.fontFamily+", barva "+o.fill;const n=o.fname||"";return "- "+(UPLOADS[n]?"nahraný obrázek "+n:"motiv z knihovny "+(n||"(neznámý)"))}).join("\n")}
 function summary(ref){const L=[],zs=printZones(),n=zs.size;
  L.push("Číslo: "+ref,"Zboží: "+MODEL.name+", barva "+$("cname").textContent);
  [...document.querySelectorAll(".sizes input")].forEach((i,ix)=>{const c=cnt(i);if(c)L.push("Velikost "+SIZES[ix]+(MODEL.age?" ("+MODEL.age[SIZES[ix]]+")":"")+": "+c+" ks po "+(priceOf(SIZES[ix])+CFG.printPrice*n)+" Kč")});
- L.push("Potisků na kus: "+n+" × "+CFG.printPrice+" Kč","Grafická úprava a kontrola: "+($("gfx").checked?"ANO (+"+CFG.graphicFee+" Kč)":"ne"),"Zboží s DPH: "+SUM+" Kč","Doprava: "+(qty()>CFG.bulkLimit?"dohodneme individuálně":$("fs").value+", "+(document.querySelector("input[name=fm]:checked").value==="pickup"?"výdejní místo":"na adresu")+", "+shipCost()+" Kč"),"CELKEM K ÚHRADĚ: "+orderTotal()+" Kč (VS "+ref.replace(/\D/g,"")+")","",...SIDES.flatMap(sd=>{const d=describe(sd);return d?["",SIDENAME[sd]+" ("+sizeText(sd)+"; "+posText(sd)+dpiText(sd)+"):",d]:[]}));return L.join("\n")}
+ L.push("Potisků na kus: "+n+" × "+CFG.printPrice+" Kč","Grafická úprava a kontrola: "+($("gfx").checked?"ANO (+"+CFG.graphicFee+" Kč)":"ne"),"Zboží s DPH: "+SUM+" Kč","Doprava: "+(isBulk()?"dohodneme individuálně":$("fs").value+", "+(document.querySelector("input[name=fm]:checked").value==="pickup"?"výdejní místo":"na adresu")+", "+shipCost()+" Kč"),"CELKEM K ÚHRADĚ: "+orderTotal()+" Kč (VS "+ref.replace(/\D/g,"")+")","",...SIDES.flatMap(sd=>{const d=describe(sd);return d?["",SIDENAME[sd]+" ("+sizeText(sd)+"; "+posText(sd)+dpiText(sd)+"):",d]:[]}));return L.join("\n")}
 // Velký originál zmenší na nejvýš 3508 px (A4 při 300 dpi) a znovu uloží, aby se vešel do přílohy.
 function shrinkImg(file,budget){return new Promise(res=>{if(!/^image\/(jpeg|png|webp)$/.test(file.type)){res(null);return}const u=URL.createObjectURL(file),im=new Image();
  im.onload=async()=>{try{const k=Math.min(1,3508/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
@@ -356,16 +360,19 @@ function layerBlob(sd){return new Promise(res=>{try{if(!objsOf(sd).length){res(n
 function mockBlob(sd,layer){return new Promise(res=>{try{const c=document.createElement("canvas");c.width=960;c.height=1040;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,960,1040);paintShirt(x,sd,2);
  const im=new Image();im.onload=()=>{x.drawImage(im,0,0,960,1040);c.toBlob(res,"image/jpeg",0.85)};im.onerror=()=>res(null);im.src=URL.createObjectURL(layer)}catch(e){res(null)}})}
 function shipCost(){const c=CFG.ship[$("fs").value];if(!c)return 0;const m=document.querySelector('input[name=fm]:checked').value;return c[m][qty()>CFG.bigOrderQty?1:0]}
-function orderTotal(){return SUM+(qty()>CFG.bulkLimit?0:shipCost())}
-function refreshOrder(){const bulk=qty()>CFG.bulkLimit;$("onotice").textContent=bulk?"Po odeslání se vám ozveme s cenovou nabídkou.":"Po odeslání zaplatíte QR kódem. Objednávku zpracujeme po přijetí platby a kontrole návrhu, potvrzení vám pošleme e-mailem.";const m=document.querySelector('input[name=fm]:checked').value;
+function orderTotal(){return SUM+(isBulk()?0:shipCost())}
+function refreshOrder(){const bulk=isBulk();$("onotice").textContent=bulk?"Po odeslání se vám ozveme s cenovou nabídkou.":"Po odeslání zaplatíte QR kódem. Objednávku zpracujeme po přijetí platby a kontrole návrhu, potvrzení vám pošleme e-mailem.";const m=document.querySelector('input[name=fm]:checked').value;
  $("shipbox").hidden=bulk;$("fal").textContent=bulk?"Adresa":(m==="pickup"?"Výdejní místo (název a adresa nebo kód)":"Adresa pro doručení");
  $("osum").textContent=MODEL.name+", "+$("cname").textContent+" · zboží "+SUM+" Kč"+(bulk?"":" + doprava "+shipCost()+" Kč = celkem "+orderTotal()+" Kč")}
+function bulkMail(){const L=[...document.querySelectorAll(".sizes input")].map((i,ix)=>cnt(i)?SIZES[ix]+": "+cnt(i)+" ks":"").filter(Boolean).join(", ");
+ return "mailto:"+CFG.orderEmail+"?subject="+encodeURIComponent("Hromadná objednávka s potiskem – "+qty()+" ks")+"&body="+encodeURIComponent("Dobrý den,\nmám zájem o hromadnou objednávku s potiskem.\n\nTričko: "+MODEL.name+", barva "+$("cname").textContent+"\nPočty: "+L+"\nPotisk: "+[...printZones()].map(sd=>SIDENAME[sd].toLowerCase()).join(", ")+"\n\nNávrh posílám v příloze.\n")}
 function openOrder(){$("cartmsg").textContent="";const q=qty();
+ if(isBulk()){$("cartmsg").textContent="Od "+CFG.bulkMin+" kusů nám prosím napište na "+CFG.orderEmail+".";location.href=bulkMail();return}
  const blur=SIDES.map(sd=>[sd,worstDpi(sd)]).filter(x=>x[1]&&x[1].d<CFG.minDpi);
  if(blur.length){const sd=blur[0][0],w=blur[0][1];if(sd!==side)switchSide(sd);
   block("Objednávku nelze odeslat: obrázek „"+w.n+"“ ("+SIDENAME[sd].toLowerCase()+") má na zvolenou velikost jen asi "+w.d+" dpi, potřebujeme alespoň "+CFG.minDpi+" dpi. Obrázek zmenšete, nebo nahrajte větší soubor ve vyšším rozlišení.");return}const big=SIDES.filter(sd=>!fits(sd));if(big.length){block("Potisk je příliš velký: "+big.map(sd=>SIDENAME[sd].toLowerCase()).join(", ")+". Zmenšete ho na povolenou velikost: "+limText()+".");return}if(!q){say("Zadejte počet kusů alespoň u jedné velikosti.");return}
  if(!printZones().size){say("Přidejte na tričko alespoň jeden text nebo obrázek.");return}
- const bulk=q>CFG.bulkLimit;$("otitle").textContent=bulk?"Poptávka nad "+CFG.bulkLimit+" ks":"Dokončit objednávku";$("osend").textContent=bulk?"Odeslat poptávku":"Odeslat objednávku";
+ const bulk=isBulk();$("otitle").textContent=bulk?"Poptávka od "+CFG.bulkMin+" ks":"Dokončit objednávku";$("osend").textContent=bulk?"Odeslat poptávku":"Odeslat objednávku";
  if(!$("fs").options.length)Object.keys(CFG.ship).forEach(k=>$("fs").add(new Option(k,k)));refreshOrder();$("oerr").textContent="";$("oform").hidden=false;$("odone").hidden=true;$("omodal").hidden=false;$("fn").focus()}
 // Spolehlivá cesta: soubory se nahrají do úložiště Cloudinary (bez společného limitu), e-mail jde přes FormSubmit AJAX s potvrzením doručení.
 async function upOne(name,blob,ref){const fd=new FormData();fd.append("file",blob instanceof File?blob:new File([blob],name,{type:blob.type||"image/png"}));fd.append("upload_preset",CFG.preset);fd.append("tags",ref);
@@ -375,7 +382,7 @@ async function sendCloud(ref,mocks,layers,orig){const items=[...mocks,...orig.ma
   if(b.size>CFG.cloudMax){const c=await shrinkImg(b instanceof File?b:new File([b],nm,{type:b.type}),CFG.cloudMax);if(c&&c.size<=CFG.cloudMax){b=c;shr.push(nm)}}
   const u=b.size<=CFG.cloudMax?await upOne(nm,b,ref):null;u?links.push(nm+": "+u):bad.push(nm)}
  const ob=orig.map(x=>x.name).filter(n=>bad.includes(n));if(ob.length)pendingNote="Některé vaše soubory se nepodařilo nahrát. Pošlete je prosím e-mailem a uveďte číslo objednávky: "+ob.join(", ");
- const bulk=qty()>CFG.bulkLimit,body={_subject:(bulk?"POPTÁVKA ":"OBJEDNÁVKA ")+ref+" – návrhář potisku",_template:"table",_captcha:"false",
+ const bulk=isBulk(),body={_subject:(bulk?"POPTÁVKA ":"OBJEDNÁVKA ")+ref+" – návrhář potisku",_template:"table",_captcha:"false",
   "Číslo":ref,"Jméno":$("fn").value,email:$("fe").value,"Telefon":$("ft").value,"Adresa / výdejní místo":$("fa").value,"Poznámka zákazníka":$("fz").value,"Souhlas":"ano",
   "Souhrn":summary(ref)+(shr.length?"\n\nZMENŠENO NA 3508 px (A4 při 300 dpi): "+shr.join(", "):"")+(bad.length?"\n\nNENAHRÁNO: "+bad.join(", "):""),
   "Soubory ke stažení":links.join("\n")||"(žádné)"};
@@ -413,7 +420,7 @@ async function sendOrder(){const ref="TX-"+new Date().toISOString().slice(2,10).
   if(ol.length)pendingNote="Vaše původní soubory jsou pro odeslání příliš velké. Pošlete je prosím e-mailem a uveďte číslo objednávky: "+ol.join(", ")}
  const f=document.createElement("form");f.method="POST";f.enctype="multipart/form-data";f.action="https://formsubmit.co/"+CFG.formId;f.target="sink";f.style.display="none";
  const hid=(n,v)=>{const i=document.createElement("input");i.type="hidden";i.name=n;i.value=v;f.appendChild(i)};
- hid("_subject",(qty()>CFG.bulkLimit?"POPTÁVKA ":"OBJEDNÁVKA ")+ref+" – návrhář potisku");hid("_captcha","false");hid("_template","table");
+ hid("_subject",(isBulk()?"POPTÁVKA ":"OBJEDNÁVKA ")+ref+" – návrhář potisku");hid("_captcha","false");hid("_template","table");
  const hp=document.createElement("input");hp.type="text";hp.name="_honey";hp.style.display="none";f.appendChild(hp);
   hid("Číslo",ref);hid("Jméno",$("fn").value);hid("email",$("fe").value);hid("Telefon",$("ft").value);hid("Adresa / výdejní místo",$("fa").value);hid("Poznámka zákazníka",$("fz").value);hid("Souhlas","ano");hid("Souhrn",summary(ref)+(note?"\n\n"+note:""));
  files.forEach((x,ix)=>{const i=document.createElement("input");i.type="file";i.name="priloha"+(ix+1);const dt=new DataTransfer();dt.items.add(x[1] instanceof File?x[1]:new File([x[1]],x[0],{type:x[1].type||"image/png"}));i.files=dt.files;f.appendChild(i)});
@@ -428,11 +435,11 @@ $("ocopy").onclick=copyTxt;
 function mailMe(bulk){const ref=$("oref").textContent,vs=ref.replace(/\D/g,""),t=bulk?"Poptávka "+ref+" z návrháře potisku texo.cz. Ozveme se vám s cenovou nabídkou.":
  "Objednávka "+ref+" z návrháře potisku texo.cz\nCelkem k úhradě: "+orderTotal()+" Kč\nČíslo účtu: "+CFG.acct+"\nIBAN: "+CFG.iban+"\nVariabilní symbol: "+vs+"\n\n"+xmasText()+"\nObjednávku zpracujeme po přijetí platby a kontrole návrhu.";
  MAILTXT=t;$("ocmsg").textContent="";$("omailme").href="mailto:"+encodeURIComponent($("fe").value.trim())+"?subject="+encodeURIComponent((bulk?"Poptávka ":"Objednávka ")+ref+" – texo.cz")+"&body="+encodeURIComponent(t)}
-function showPay(){const bulk=qty()>CFG.bulkLimit;mailMe(bulk);$("pay").hidden=true;if(bulk)return;
+function showPay(){const bulk=isBulk();mailMe(bulk);$("pay").hidden=true;if(bulk)return;
  try{const vs=$("oref").textContent.replace(/\D/g,""),am=orderTotal().toFixed(2),spd="SPD*1.0*ACC:"+CFG.iban+"*AM:"+am+"*CC:CZK*X-VS:"+vs+"*MSG:OBJEDNAVKA "+$("oref").textContent;
  $("qr").innerHTML="";if(window.qrcode){const q=qrcode(0,"M");q.addData(spd);q.make();$("qr").innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}
  $("paytxt").innerHTML="Číslo účtu: <b>"+CFG.acct+"</b><br>IBAN: "+CFG.iban+"<br>Částka: <b>"+orderTotal()+" Kč</b><br>Variabilní symbol: <b>"+vs+"</b>";$("pay").hidden=false}catch(e){}}
-function orderDone(){showPay();$("otitle").textContent=qty()>CFG.bulkLimit?"Poptávka odeslána":"Objednávka odeslána";$("onext").textContent=qty()>CFG.bulkLimit?"Ozveme se vám s cenovou nabídkou.":"Po přijetí platby a kontrole návrhu vám pošleme potvrzení e-mailem.";$("osend").disabled=false;$("onote").textContent=pendingNote;$("oform").hidden=true;$("odone").hidden=false}
+function orderDone(){showPay();$("otitle").textContent=isBulk()?"Poptávka odeslána":"Objednávka odeslána";$("onext").textContent=isBulk()?"Ozveme se vám s cenovou nabídkou.":"Po přijetí platby a kontrole návrhu vám pošleme potvrzení e-mailem.";$("osend").disabled=false;$("onote").textContent=pendingNote;$("oform").hidden=true;$("odone").hidden=false}
 $("sink").onload=()=>{if(!waiting)return;waiting=false;clearTimeout(wtimer);$("osend").disabled=false;$("osend").textContent="Odeslat objednávku";orderDone()};
 $("ofrm").onsubmit=e=>{e.preventDefault();const em=$("fe").value.trim(),err=$("oerr");
  if(!$("fn").value.trim()||!em||!$("ft").value.trim()||!$("fa").value.trim()){err.textContent="Vyplňte prosím jméno, e-mail, telefon a adresu.";return}
